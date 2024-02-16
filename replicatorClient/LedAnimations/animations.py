@@ -70,7 +70,7 @@ def clear(ledInterface, delay):
         ledInterface.setAll(color_r=0, color_g=0, color_b=0, brightness=0)
         ledInterface.write()
 
-    t = threading.Timer(delay, func)
+    t = threading.Timer(delay/1000, func)
     t.start()
 def circle(ledInterface, startBrighness: int, endBrightness: int):
 
