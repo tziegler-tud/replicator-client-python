@@ -119,18 +119,36 @@ class LedInterface(Interface):
         return future
 
     def setInterval(self, func, ms):
-        self.interval = set_interval(func,ms)
+        self.interval = self.set_intervalAsync(func, ms / 1000)
+
+        loop = asyncio.get_event_loop()
+        loop.run_forever()
 
     def clearInterval(self):
         if self.interval is not None:
             self.interval.stop()
         self.interval = None
 
+    def set_intervalAsync(self, func, sec):
+        async def func_wrapper():
+            await func()
+            self.interval = self.set_intervalAsync(func, sec)
 
-def set_interval(func, sec):
-    def func_wrapper():
-        set_interval(func, sec)
-        func()
-    t = threading.Timer(sec, func_wrapper)
-    t.start()
-    return t
+        t = Timer(sec, func_wrapper)
+        return t
+
+class Timer:
+    def __init__(self, timeout, callback):
+        self._timeout = timeout
+        self._callback = callback
+        self._task = asyncio.ensure_future(self._job())
+
+    async def _job(self):
+        await asyncio.sleep(self._timeout)
+        await self._callback()
+
+    def cancel(self):
+        self._task.cancel()
+
+    def stop(self):
+        self.cancel()

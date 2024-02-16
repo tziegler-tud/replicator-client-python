@@ -53,10 +53,10 @@ class Led:
         if brightness < 0: brightness = 0
         if brightness > 1: brightness = 1
         self.brightness = brightness
-        self.buffer[0] = self.getBrightnessValue() | 0x0b11100000
+        self.buffer[0] = self.getBrightnessValue() | 0b11100000
 
     def setBrightnessRaw(self, brightness):
-        self.buffer = brightness | 0x0b11100000
+        self.buffer = brightness | 0b11100000
 
     def writeToInterface(self):
         self.ledInterface.setBuffer(self.id, self.buffer)

@@ -47,11 +47,11 @@ def setupFunc(ledInterface, ledAnimation: LedAnimation):
     nextFrame = fillingCircle(ledInterface, 0, 0.1)
 
     async def circleFunc():
-        await nextFrame()
+        nextFrame()
         nonlocal i
         i += 1
         ledInterface.write()
-        if i == ledInterface.ledAmount:
+        if i >= ledInterface.ledAmount:
             ledInterface.clearInterval()
             clear(ledInterface,1000)
             f.set_result(True)
@@ -99,7 +99,7 @@ def fillingCircle(ledInterface, startBrightness: int, endBrightness: int):
     leds = ledInterface.getLeds()
     range = endBrightness - startBrightness
     step = range / 2
-    async def nextFrame():
+    def nextFrame():
         nonlocal index
         index = (index + 1) % (maxIndex +1)
         leds[index].setBrightness(endBrightness)
