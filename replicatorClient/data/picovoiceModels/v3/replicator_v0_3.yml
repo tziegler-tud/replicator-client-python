@@ -1,0 +1,276 @@
+context:
+  expressions:
+    changeColor:
+      - "@turn (all, the) lights (to) $color:color"
+      - "@turn (the) $location:location (color, @lights) (to) $color:color"
+      - "@turn (the) [color, @lights] [at, in] (the) $location:location (to)
+        $color:color"
+      - "@turn (the) [color, @lights] (to) $color:color [at,in] (the)
+        $location:location"
+    changeLightState:
+      - "@switch $state:state (all, the) ($location:location) @lights"
+      - "@switch (all, the) ($location:location) @lights $state:state"
+      - "@switch $state:state (the) @lights [at, in] (the) $location:location"
+      - "@switch (the) @lights [in, at] the $location:location $state:state"
+      - "@lights"
+      - "@lights $state:state"
+      - "@switch (the) @lights $state:state $location:location"
+      - "@lights $state:state $location:location"
+    changeLightStateOff:
+      - shut off (all, the) ($location:location) @lights
+      - shut (all, the) ($location:location) @lights off
+      - shut off (the) @lights [at, in] (the) $location:location
+      - shut (the) @lights off [at, in] (the) $location:location
+      - shut (the) @lights [at, in] (the) $location:location off
+    LightBrightnessGroup:
+      - $setValue:setValue (the) @brightnessOfLights $absoluteRelative:toBy
+        $pv.Percent:percent (percent)
+      - $setValue:setValue (the) @brightnessOfLights $absoluteRelative:toBy
+        $pv.Percent:percent (percent) [in, at] (the) $location:location
+      - $setValue:setValue (@brightness) (the) $location:location (@lights)
+        $absoluteRelative:toBy $pv.Percent:percent (percent)
+      - $setValue:setValue (@brightness) (@lights) to $minmax:minmax
+      - $setValue:setValue (@brightness) (@lights) to $minmax:minmax [in, at]
+        (the) $location:location
+      - $setValue:setValue (@brightness) (the) $location:location (@lights) to
+        $minmax:minmax
+      - $setValue:setValue @brightnessOfLights [in, at] (the) $location:location
+      - $setValue:setValue @lights [in, at] (the) $location:location
+      - $setValue:setValue $location:location @lights
+      - $setValue:setValue $location:location @lights $absoluteRelative:toBy
+        $pv.Percent:percent (percent)
+      - $setValue:setValue ($location:location) @brightnessOfLights
+      - (@brightness) (@lights) ($location:location) (@lights)
+        ($absoluteRelative:toBy) $pv.Percent:percent (percent)
+      - "@lights to $minmax:minmax"
+      - $location:location @lights to $minmax:minmax
+    LightBrightnessLight:
+      - $setValue:setValue (the) (@brightnessOfLights) (the)
+        $lightSelect:lightSelect (@lightLamp)
+      - $setValue:setValue (the) (@brightnessOfLights) (the)
+        $lightSelect:lightSelect (@lightLamp) $absoluteRelative:toBy
+        [$pv.Percent:percent, $minmax:minmax]
+      - $lightSelect:lightSelect (@lightLamp) $absoluteRelative:toBy
+        [$pv.Percent:percent, $minmax:minmax]
+    LightScenes:
+      - "@lightSceneSelect @lightSceneAlias to $lightScenes:lightScene"
+      - $lightScenes:lightScene
+    MusicControl:
+      - "@turn (@this) @musicAlias $state:musicState"
+      - $musicStartStop:musicStartStop ($thisNext:thisNext) [@musicAlias,
+        @musicSong]
+      - $musicStartStop:musicStartStop $pv.SingleDigitInteger:singleDigitAmount
+        @musicSong
+    MusicSelect:
+      - "@startMusic (some) $musicArtist:musicArtist"
+      - "@startMusic something [by, from] $musicArtist:musicArtist"
+      - "@startMusic something $musicMood:musicMood"
+      - "@startMusic (some) $musicStyle:musicStyle"
+      - "@startMusic (some) $musicStyle:musicStyle [@musicAlias, @musicSong]"
+      - "@startMusic (some) $musicMood:musicMood [@musicAlias, @musicSong]"
+    MusicVolume:
+      - $setValue:setValue (@musicAlias) @volume $absoluteRelative:toBy
+        $pv.Percent:percent (percent)
+      - $setValue:setValue (@musicAlias) @volume
+      - $setValue:setValue (@musicAlias) @volume to $minmax:minmax
+  slots:
+    color:
+      - blue
+      - green
+      - orange
+      - pink
+      - purple
+      - red
+      - white
+      - yellow
+    state:
+      - off
+      - on
+    location:
+      - bathroom
+      - bedroom
+      - hallway
+      - kitchen
+      - living room
+      - everywhere
+    place: []
+    setValue:
+      - increase
+      - decrease
+      - set
+      - raise
+      - lower
+    lightSelect:
+      - main light
+      - floor light
+      - floor lamp
+      - desk light
+      - desk lamp
+      - bed lights
+      - bed light left
+      - bed light right
+      - light bar
+    absoluteRelative:
+      - to
+      - by
+    lightScenes:
+      - Sunrise
+      - Sunset
+      - Daylight
+      - Evening
+      - Night
+      - Maximum
+      - Minimum
+      - Focus
+    musicMood:
+      - romantic
+      - slow
+      - depressing
+      - sleepy
+      - sad
+      - happy
+      - relaxed
+      - funny
+      - fast
+      - exciting
+      - inspiring
+      - cheerful
+      - peaceful
+      - silly
+      - lonely
+    musicArtist:
+      - Queen
+      - Elton John
+      - Pink Floyd
+      - Disney
+      - Meat Loaf
+      - The Doors
+      - The Beatles
+      - Simon and Garfunkel
+    musicStyle:
+      - Jazz
+      - Rock
+      - Pop
+      - Instrumental
+      - Piano
+      - Guitar
+      - Metal
+      - Hard Rock
+      - Classical Music
+      - Classic
+      - Punk
+      - Country
+      - Reggae
+    musicStartStop:
+      - start
+      - stop
+      - resume
+      - mute
+      - skip
+      - restart
+      - play
+      - repeat
+    minmax:
+      - min
+      - minimum
+      - max
+      - maximum
+    increaseDecrease:
+      - increase
+      - decrease
+      - raise
+      - lower
+    thisNext:
+      - this
+      - current
+      - recent
+      - next
+      - upcoming
+  macros:
+    lights:
+      - lights
+      - light
+    lightLamp:
+      - light
+      - lamp
+      - bulb
+    turn:
+      - turn
+      - make
+      - change
+      - set
+      - switch
+    switch:
+      - switch
+      - turn
+    brightness:
+      - brightness
+      - power
+      - level
+      - brightness of
+      - power of
+      - level of
+    brightnessOfLights:
+      - brightness
+      - brightness of lights
+      - light
+      - power of lights
+      - lights
+      - light brightness
+      - lights brightness
+      - brightness of light
+    increase:
+      - increase
+      - raise
+    decrease:
+      - decrease
+      - lower
+    lightSceneSelect:
+      - change
+      - set
+      - make
+    lightSceneAlias:
+      - scene
+      - setting
+      - mood
+    startMusic:
+      - start
+      - play
+      - resume
+    musicAlias:
+      - music
+      - noise
+      - sound
+      - program
+    this:
+      - this
+      - current
+    stopMusic:
+      - stop
+      - halt
+    musicSong:
+      - song
+      - title
+      - track
+      - playback
+      - audio
+      - songs
+      - titles
+      - tracks
+    thisLast:
+      - this
+      - current
+      - last
+      - recent
+      - last played
+    volume:
+      - volume
+      - loudness
+    playMusic:
+      - play
+      - resume
+      - continue
+      - start
+    next:
+      - next
+      - upcoming

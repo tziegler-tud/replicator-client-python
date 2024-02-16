@@ -1,0 +1,5 @@
+{
+  "accessKey": "YourPicovoiceAccessKey",
+  "keywordArgument": "./picovoiceModels/v4/PorcupineModel.ppn",
+  "contextPath": "./picovoiceModels/v4/RhinoModel.rhn"
+}
