@@ -1,0 +1,8 @@
+Flask==3.0.2
+localStoragePy==0.2.3
+localStoragePy==0.2.3
+Mock==5.1.0
+Mock.GPIO==0.1.8
+pyfs==0.0.8
+RPi.GPIO==0.7.1
+spidev==3.6
