@@ -92,7 +92,7 @@ class MockLedInterface(Interface):
                 if r: led.setColor_r(r)
                 if g: led.setColor_g(g)
                 if b: led.setColor_b(b)
-            if kwargs.get("brightness"): led.setBrightness(kwargs.get("brightness"))
+            if kwargs.get("brightness") is not None: led.setBrightness(kwargs.get("brightness"))
 
     def clearAll(self):
         for led in self.leds:

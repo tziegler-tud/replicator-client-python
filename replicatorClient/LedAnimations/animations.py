@@ -56,10 +56,10 @@ def setupFunc(ledInterface, ledAnimation: LedAnimation):
             ledInterface.write()
             if i == ledInterface.ledAmount:
                 ledInterface.clearInterval()
-                clear(ledInterface, 1000)
+                clear(ledInterface, 2000)
                 f.set_result(True)
 
-    ledInterface.setInterval(circleFunc, 1000)
+    ledInterface.setInterval(circleFunc, 100)
     return f
 
 setup = LedAnimation("setup",1)
@@ -67,8 +67,7 @@ setup.setAnimation(setupFunc)
 
 def clear(ledInterface, delay):
     def func():
-        ledInterface.setAll(color_r=0, color_g=0, color_b=0, brightness=0)
-        ledInterface.write()
+        ledInterface.clearAll()
 
     t = threading.Timer(delay/1000, func)
     t.start()
