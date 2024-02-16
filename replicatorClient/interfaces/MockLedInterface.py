@@ -121,17 +121,16 @@ class MockLedInterface(Interface):
             case _:
                 future.set_exception("Unhandled event type.")
 
+        future.set_result(True)
         return future
 
     def setInterval(self, func, ms):
-        self.interval = self.set_intervalAsync(func,ms/1000)
-
-        loop = asyncio.get_event_loop()
-        loop.run_forever()
+        self.interval = self.set_intervalSync(func,ms/1000)
+        return
 
     def clearInterval(self):
         if self.interval is not None:
-            self.interval.stop()
+            self.interval.cancel()
         self.interval = None
 
     def set_intervalAsync(self, func, sec):
@@ -140,6 +139,15 @@ class MockLedInterface(Interface):
             self.interval = self.set_intervalAsync(func, sec)
 
         t = Timer(sec, func_wrapper)
+        return t
+
+    def set_intervalSync(self, func, sec):
+        def func_wrapper():
+            func()
+            self.interval = self.set_intervalSync(func, sec)
+
+        t = threading.Timer(sec, func_wrapper)
+        t.start()
         return t
 
 class Timer:
@@ -154,6 +162,3 @@ class Timer:
 
     def cancel(self):
         self._task.cancel()
-
-    def stop(self):
-        self.cancel()

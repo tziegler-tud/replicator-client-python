@@ -25,11 +25,11 @@ class Led:
         self.writeColorsToBuffer()
 
     def setColor_g(self,v):
-        self.color_r = v
+        self.color_g = v
         self.writeColorsToBuffer()
 
     def setColor_b(self,v):
-        self.color_r = v
+        self.color_b = v
         self.writeColorsToBuffer()
 
     def writeColorsToBuffer(self):
@@ -53,6 +53,7 @@ class Led:
         if brightness < 0: brightness = 0
         if brightness > 1: brightness = 1
         self.brightness = brightness
+
         self.buffer[0] = self.getBrightnessValue() | 0b11100000
 
     def setBrightnessRaw(self, brightness):

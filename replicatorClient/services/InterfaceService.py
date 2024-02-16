@@ -95,7 +95,8 @@ class InterfaceService(Service):
         interfaces = self.filterInterfaces(interfaceFilter, interfaceFilterType)
         for i in interfaces:
             if i.interface.isActive():
-                i.interface.handleEvent(interfaceEvent)
+                f = i.interface.handleEvent(interfaceEvent)
+                f.add_done_callback(lambda: print("Interface finished handling."))
 
     def filterInterfaces(self, interfaceFilter = [], interfaceFilterType = "include"):
         filter = interfaceFilter
