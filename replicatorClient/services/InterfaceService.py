@@ -5,6 +5,7 @@ from .Service import Service
 
 from replicatorClient.interfaces.LedInterface import LedInterface
 from replicatorClient.interfaces.SoundInterface import SoundInterface
+from ..interfaces.MockLedInterface import MockLedInterface
 
 
 class InterfaceService(Service):
@@ -64,7 +65,12 @@ class InterfaceService(Service):
         type = types.LED
         if "ledAmount" not in interfaceArgs: interfaceArgs["ledAmount"] = 1
         if "clockDivider" not in interfaceArgs: interfaceArgs["clockDivider"] = 128
-        ledInterface = LedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
+        if "mock" not in interfaceArgs: interfaceArgs["mock"] = False
+
+        if interfaceArgs["mock"]:
+            ledInterface = MockLedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
+        else:
+            ledInterface = LedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
         ledInterface.initFunc()
         self.interfaces.append(savedInterface(type, ledInterface))
 
@@ -89,7 +95,7 @@ class InterfaceService(Service):
         interfaces = self.filterInterfaces(interfaceFilter, interfaceFilterType)
         for i in interfaces:
             if i.interface.isActive():
-                i.interface.handleEvent(interfaceEvent, interfaceFilter)
+                i.interface.handleEvent(interfaceEvent)
 
     def filterInterfaces(self, interfaceFilter = [], interfaceFilterType = "include"):
         filter = interfaceFilter
@@ -111,7 +117,7 @@ class InterfaceService(Service):
 
     def getInterfaceByType(self, type):
         for item in self.interfaces:
-            if item["type"] == type: return item
+            if item.type.value == type: return item
         return None
 
     def getAll(self):

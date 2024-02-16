@@ -35,7 +35,7 @@ class Led:
     def writeColorsToBuffer(self):
         self.buffer[1] = self.color_b
         self.buffer[2] = self.color_g
-        self.buffer[3] = self.color.r
+        self.buffer[3] = self.color_r
         return self.buffer
 
     def on(self):

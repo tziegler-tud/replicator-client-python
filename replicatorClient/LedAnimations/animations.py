@@ -1,3 +1,4 @@
+import asyncio
 import threading
 
 from .LedAnimation import LedAnimation
@@ -36,7 +37,8 @@ working = LedAnimation("working", 1)
 working.setAnimation(workingFunc)
 
 
-async def setupFunc(ledInterface, ledAnimation: LedAnimation):
+def setupFunc(ledInterface, ledAnimation: LedAnimation):
+    f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
@@ -52,8 +54,10 @@ async def setupFunc(ledInterface, ledAnimation: LedAnimation):
         if i == ledInterface.ledAmount:
             ledInterface.clearInterval()
             clear(ledInterface,1000)
+            f.set_result(True)
 
     ledInterface.setInterval(circleFunc, 100)
+    return f
 
 setup = LedAnimation("setup",1)
 setup.setAnimation(setupFunc)

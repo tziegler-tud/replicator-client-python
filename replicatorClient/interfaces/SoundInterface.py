@@ -33,7 +33,7 @@ class SoundInterface(Interface):
         self.active = True
 
 
-    def handleEvent(self, event, args):
+    def handleEvent(self, event, **kwargs):
         future = asyncio.Future()
         if not self.active:
             future.set_exception("Interface inactive.")

@@ -1,20 +1,15 @@
 import asyncio
 import threading
 
-import spidev
 import typing
 
 from replicatorClient.LedAnimations.animations import setup
-try:
-    import RPi.GPIO as GPIO
-except:
-    import Mock.GPIO as GPIO
 
 from replicatorClient.interfaces.Interface import Interface
 from .Led import Led
 
 
-class LedInterface(Interface):
+class MockLedInterface(Interface):
     def __init__(self, ledAmount=1, clockDivider=128):
         super().__init__()
         self.ledAmount = ledAmount
@@ -23,13 +18,16 @@ class LedInterface(Interface):
 
         self.LED_START = 0b11100000
 
+    def debug(self, msg):
+        pre = "MockLedInterface Debug Message: "
+        print(pre + msg)
     def initFunc(self):
 
         for i in range(self.ledAmount):
             self.leds.append(Led(self, i))
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setwarnings(False)
 
         ledBufferLength = self.ledAmount * 4
         self.ledBuffer = bytearray([0xE0, 0x00, 0x00, 0x00] * self.ledAmount)
@@ -42,20 +40,27 @@ class LedInterface(Interface):
         self.writeBuffer = self.generateWriteBuffer()
 
         # set GPIO5 to HIGH
-        GPIO.setup(29, GPIO.OUT)
-        GPIO.output(29, GPIO.HIGH)
+        self.debug("Settings GPIO 29 to output.")
+        self.debug("Settings GPIO 29 to HIGH.")
+        # GPIO.setup(29, GPIO.OUT)
+        # GPIO.output(29, GPIO.HIGH)
 
-        self.spi = spidev.SpiDev()
-        self.spi.open(0, 1)
+        self.debug("Opening spi connection on chip 1.")
+
+        # self.spi = spidev.SpiDev()
+        # self.spi.open(0, 1)
 
         self.active = True
 
+
     def close(self):
-        self.spi.close()
+        self.debug("Closing spi connection.")
+        # self.spi.close()
 
     def write(self):
         writeBuffer = self.generateWriteBuffer()
-        self.spi.xfer(writeBuffer)
+        self.debug("Transfering buffer to spi. Content: " + str(writeBuffer))
+        # self.spi.xfer(writeBuffer)
 
     def generateLedBuffer(self):
         ledBufferArray = []
@@ -82,7 +87,7 @@ class LedInterface(Interface):
         b = kwargs.get("color_b", None)
 
         for led in self.leds:
-            if r and g and b: led.setColor(r,g,b)
+            if r is not None and g is not None and b is not None: led.setColors(r,g,b)
             else:
                 if r: led.setColor_r(r)
                 if g: led.setColor_g(g)
@@ -105,7 +110,7 @@ class LedInterface(Interface):
 
         match event.value:
             case "setupComplete":
-                return setup.play(self)
+                setup.play(self)
             # case "ready":
             # case "wake":
             # case "understood":
