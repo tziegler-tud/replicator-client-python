@@ -59,7 +59,7 @@ def setupFunc(ledInterface, ledAnimation: LedAnimation):
                 clear(ledInterface, 1000)
                 f.set_result(True)
 
-    ledInterface.setInterval(circleFunc, 100)
+    ledInterface.setInterval(circleFunc, 1000)
     return f
 
 setup = LedAnimation("setup",1)
