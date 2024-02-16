@@ -1,5 +1,10 @@
 import asyncio
+import threading
+
 import spidev
+import typing
+
+from replicatorClient.LedAnimations.animations import setup
 try:
     import RPi.GPIO as GPIO
 except:
@@ -7,6 +12,8 @@ except:
 
 from replicatorClient.interfaces.Interface import Interface
 from .Led import Led
+
+
 class LedInterface(Interface):
     def __init__(self, ledAmount=1, clockDivider=128):
         super().__init__()
@@ -19,13 +26,13 @@ class LedInterface(Interface):
     def initFunc(self):
 
         for i in range(self.ledAmount):
-            self.leds.append(Led(self,i))
+            self.leds.append(Led(self, i))
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
         ledBufferLength = self.ledAmount * 4
-        self.ledBuffer = bytearray([0xE0, 0x00,0x00,0x00] * self.ledAmount)
+        self.ledBuffer = bytearray([0xE0, 0x00, 0x00, 0x00] * self.ledAmount)
         self.bufferLength = 4 + ledBufferLength + 4
 
         self.startFrame = bytearray([0x00] * 4)
@@ -67,10 +74,18 @@ class LedInterface(Interface):
         self.writeBuffer[pos + 2] = buffer[2]
         self.writeBuffer[pos + 3] = buffer[3]
 
-    def setAll(self, args):
+    def setAll(self, **kwargs):
+        r = kwargs.get("color_r", None)
+        g = kwargs.get("color_g", None)
+        b = kwargs.get("color_b", None)
+
         for led in self.leds:
-            if args.color: led.setColor(args.color)
-            if args.brightness: led.setBrightness(args.brightness)
+            if r and g and b: led.setColor(r,g,b)
+            else:
+                if r: led.setColor_r(r)
+                if g: led.setColor_g(g)
+                if b: led.setColor_b(b)
+            if kwargs.get("brightness"): led.setBrightness(kwargs.get("brightness"))
 
     def clearAll(self):
         for led in self.leds:
@@ -79,7 +94,7 @@ class LedInterface(Interface):
     def getLeds(self):
         return self.leds
 
-    def handleEvent(self, event, args):
+    def handleEvent(self, event, **kwargs):
         future = asyncio.Future()
         if not self.active:
             future.set_exception("Interface inactive.")
@@ -87,7 +102,8 @@ class LedInterface(Interface):
             self.interval = None
 
         match event.value:
-            # case "setupComplete":
+            case "setupComplete":
+                setup.play(self)
             # case "ready":
             # case "wake":
             # case "understood":
@@ -99,3 +115,15 @@ class LedInterface(Interface):
                 future.set_exception("Unhandled event type.")
 
         return future
+
+    def setInterval(self, func, ms):
+        self.interval = set_interval(func,ms)
+
+
+def set_interval(func, sec):
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+    return t

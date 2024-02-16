@@ -14,10 +14,22 @@ class Led:
         self.brightness = 0
         self.buffer = bytearray([0xE0,0x00,0x00,0x00])
 
-    def setColor(self, r, g, b):
+    def setColors(self, r=0, g=0, b=0):
         self.color_r = r
         self.color_g = g
         self.color_b = b
+        self.writeColorsToBuffer()
+
+    def setColor_r(self,v):
+        self.color_r = v
+        self.writeColorsToBuffer()
+
+    def setColor_g(self,v):
+        self.color_r = v
+        self.writeColorsToBuffer()
+
+    def setColor_b(self,v):
+        self.color_r = v
         self.writeColorsToBuffer()
 
     def writeColorsToBuffer(self):
