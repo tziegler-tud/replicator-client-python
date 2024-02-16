@@ -67,7 +67,9 @@ setup.setAnimation(setupFunc)
 
 def clear(ledInterface, delay):
     def func():
+        print("clearing leds")
         ledInterface.clearAll()
+        ledInterface.write()
 
     t = threading.Timer(delay/1000, func)
     t.start()
