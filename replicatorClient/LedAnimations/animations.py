@@ -1,10 +1,9 @@
 import threading
 
-from LedAnimation import LedAnimation
-from replicatorClient.interfaces.LedInterface import LedInterface
+from .LedAnimation import LedAnimation
 import typing
 
-async def readyFunc(ledInterface: LedInterface, ledAnimation: LedAnimation):
+async def readyFunc(ledInterface, ledAnimation: LedAnimation):
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=0, brightness=0)
     ledInterface.write()
@@ -12,7 +11,7 @@ async def readyFunc(ledInterface: LedInterface, ledAnimation: LedAnimation):
 ready = LedAnimation("ready", 1)
 ready.setAnimation(readyFunc)
 
-async def wakeFunc(ledInterface:LedInterface, ledAnimation: LedAnimation):
+async def wakeFunc(ledInterface, ledAnimation: LedAnimation):
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=255, brightness=0.1)
     ledInterface.write()
@@ -20,7 +19,7 @@ async def wakeFunc(ledInterface:LedInterface, ledAnimation: LedAnimation):
 wake = LedAnimation("wake", 1)
 wake.setAnimation(wakeFunc)
 
-async def workingFunc(ledInterface:LedInterface, ledAnimation: LedAnimation):
+async def workingFunc(ledInterface, ledAnimation: LedAnimation):
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=255, brightness=0.1)
     ledInterface.write()
@@ -37,7 +36,7 @@ working = LedAnimation("working", 1)
 working.setAnimation(workingFunc)
 
 
-async def setupFunc(ledInterface:LedInterface, ledAnimation: LedAnimation):
+async def setupFunc(ledInterface, ledAnimation: LedAnimation):
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
@@ -59,14 +58,14 @@ async def setupFunc(ledInterface:LedInterface, ledAnimation: LedAnimation):
 setup = LedAnimation("setup",1)
 setup.setAnimation(setupFunc)
 
-def clear(ledInterface: LedInterface, delay):
+def clear(ledInterface, delay):
     def func():
         ledInterface.setAll(color_r=0, color_g=0, color_b=0, brightness=0)
         ledInterface.write()
 
     t = threading.Timer(delay, func)
     t.start()
-def circle(ledInterface:LedInterface, startBrighness: int, endBrightness: int):
+def circle(ledInterface, startBrighness: int, endBrightness: int):
 
     index = 0
     maxIndex = ledInterface.ledAmount -1
@@ -90,7 +89,7 @@ def circle(ledInterface:LedInterface, startBrighness: int, endBrightness: int):
 
     return nextFrame
 
-def fillingCircle(ledInterface:LedInterface, startBrightness: int, endBrightness: int):
+def fillingCircle(ledInterface, startBrightness: int, endBrightness: int):
     index = 0
     maxIndex = ledInterface.ledAmount - 1
     leds = ledInterface.getLeds()
