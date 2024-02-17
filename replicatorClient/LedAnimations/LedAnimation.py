@@ -10,12 +10,9 @@ class LedAnimation:
         self.animation = animation
         self.active = False
 
-    def play(self,ledInterface):
-        future = asyncio.Future()
+    async def play(self,ledInterface):
         self.active = True
-        f = self.animation(ledInterface, self)
-        f.add_done_callback(lambda: future.set_result(True))
-        return future
+        self.animation(ledInterface, self)
 
     def stop(self, ledInterface):
         self.active = False

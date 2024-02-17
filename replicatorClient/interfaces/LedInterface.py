@@ -4,7 +4,7 @@ import threading
 import spidev
 import typing
 
-from replicatorClient.LedAnimations.animations import setup
+from replicatorClient.LedAnimations.animations import ready, wake, working, setup, success, fail, notunderstood
 try:
     import RPi.GPIO as GPIO
 except:
@@ -96,27 +96,31 @@ class LedInterface(Interface):
     def getLeds(self):
         return self.leds
 
-    def handleEvent(self, event, **kwargs):
-        future = asyncio.Future()
-        if not self.active:
-            future.set_exception("Interface inactive.")
+    async def handleEventInternal(self, event, **kwargs):
         if self.interval is not None:
             self.interval = None
 
         match event.value:
             case "setupComplete":
                 return setup.play(self)
-            # case "ready":
-            # case "wake":
+            case "ready":
+                return ready.play(self)
+            case "wake":
+                return wake.play(self)
             # case "understood":
+            #     return
             # case "working":
-            # case "notunderstood":
-            # case "failed":
-            # case "success":
+            case "notunderstood":
+                return notunderstood.play(self)
+            case "failed":
+                return fail.play(self)
+            case "success":
+                return success.play(self)
             case _:
-                future.set_exception("Unhandled event type.")
+                self.warn("Unhandled event type.")
+                return Exception("Unhandled event type.")
 
-        return future
+        return True
 
     def setInterval(self, func, ms):
         self.interval = self.set_intervalSync(func, ms / 1000)

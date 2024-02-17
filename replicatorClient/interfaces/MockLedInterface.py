@@ -101,16 +101,13 @@ class MockLedInterface(Interface):
     def getLeds(self):
         return self.leds
 
-    def handleEvent(self, event, **kwargs):
-        future = asyncio.Future()
-        if not self.active:
-            future.set_exception("Interface inactive.")
+    async def handleEventInternal(self, event, **kwargs):
         if self.interval is not None:
             self.interval = None
 
         match event.value:
             case "setupComplete":
-                return setup.play(self)
+                return await setup.play(self)
             # case "ready":
             # case "wake":
             # case "understood":
@@ -119,10 +116,8 @@ class MockLedInterface(Interface):
             # case "failed":
             # case "success":
             case _:
-                future.set_exception("Unhandled event type.")
-
-        future.set_result(True)
-        return future
+                self.warn("Unhandled event type.")
+                return Exception("Unhandled event type.")
 
     def setInterval(self, func, ms):
         self.interval = self.set_intervalSync(func,ms/1000)

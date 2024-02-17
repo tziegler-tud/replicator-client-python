@@ -4,18 +4,27 @@ class Interface:
     def __init__(self):
         self.active = False
         self.interval = None
-
+        self.name = "Interface"
     def initFunc(self):
-        future = asyncio.Future()
-        future.set_result("Interface initialized")
+        return True
 
-    def handleEvent(self, event, args):
-        future = asyncio.Future()
+    def debug(self, msg):
+        print("<DEBUG>: " + self.name + ": "  + msg)
+
+    def error(self, msg):
+        print("<ERROR>: " + self.name + ": " + msg)
+
+    def warn(self, msg):
+        print("<WARNING>: " + self.name + ": " + msg)
+
+    async def handleEvent(self, event, **kwargs):
         if not self.active:
-            future.set_exception("Interface inactive.")
+            self.error("Interface is inactive.")
+        return self.handleEventInternal(event, **kwargs)
+
+    async def handleEventInternal(self, event, **kwargs):
         if self.interval is not None:
             self.interval = None
-
         match event.value:
             # case "setupComplete":
             # case "ready":
@@ -26,9 +35,8 @@ class Interface:
             # case "failed":
             # case "success":
             case _:
-                future.set_exception("Unhandled event type.")
-
-        return future
+                self.warn("Unhandled event type.")
+                return False
 
     def isActive(self):
         return self.active

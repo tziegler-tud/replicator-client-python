@@ -10,6 +10,7 @@ class SoundInterface(Interface):
     def __init__(self):
         super().__init__()
         self.soundDirPath = os.path.join(DATA_DIR, "sounds")
+        self.errMsg = "SoundInterface Error: "
 
         self.sounds = {
             "SETUPCOMPLETE": "power_up1_clean.wav",
@@ -32,17 +33,13 @@ class SoundInterface(Interface):
     def initFunc(self):
         self.active = True
 
-
-    def handleEvent(self, event, **kwargs):
-        future = asyncio.Future()
-        if not self.active:
-            future.set_exception("Interface inactive.")
+    async def handleEventInternal(self, event, **kwargs):
         if self.interval is not None:
             self.interval = None
 
         match event.value:
             case "setupComplete":
-                return self.play(self.files["SETUPCOMPLETE"])
+                return await self.play(self.files["SETUPCOMPLETE"])
             case "ready":
                 return self.play(self.files["READY"])
             case "wake":
@@ -60,12 +57,12 @@ class SoundInterface(Interface):
             case "success":
                 return self.play(self.files["SUCCESS"])
             case _:
-                future.set_exception("Unhandled event type.")
+                self.warn("Unhandled event type.")
+                return Exception("Unhandled event type.")
 
-        return future
+        return True
 
-    def play(self, path, duration=None, delay=None):
-        f = asyncio.Future()
+    async def play(self, path, duration=None, delay=None):
         args = ""
         if duration is not None:
             args += "--duration=" + str(duration)
@@ -74,7 +71,6 @@ class SoundInterface(Interface):
             t.start()
         else:
             self.playInternal(path, args)
-            return f
 
     def playInternal(self, path, args=""):
         # run(["aplay", args, path])

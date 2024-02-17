@@ -1,19 +1,50 @@
+import asyncio
+
 from replicatorClient.services.SettingsService import SettingsService
 from replicatorClient.services.InterfaceService import InterfaceService, events as InterfaceEvents
 from flask import Flask
 
-app = Flask(__name__)
+from quart import Quart, render_template, websocket
 
-settingsService = SettingsService()
-settingsService.start()
+async def background_service(app):
 
-print(settingsService.getSettings())
+    settingsService = SettingsService()
+    settingsService.start()
 
-interfaceService = InterfaceService(settingsService)
-interfaceService.start()
+    print(settingsService.getSettings())
 
-interfaceService.handleEvent(InterfaceEvents.SETUPCOMPLETE)
+    interfaceService = InterfaceService(settingsService)
+    interfaceService.start()
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+    interfaceService.handleEvent(InterfaceEvents.SETUPCOMPLETE)
+    @app.route("/test/interface/<event>")
+    async def interfaceTest(event):
+        match event:
+            case "setupComplete":
+                interfaceService.handleEvent(InterfaceEvents.SETUPCOMPLETE)
+            case "ready":
+                interfaceService.handleEvent(InterfaceEvents.READY)
+            case "wake":
+                interfaceService.handleEvent(InterfaceEvents.WAKE)
+                # case "understood":
+                interfaceService.handleEvent(InterfaceEvents.UNDERSTOOD)
+            case "working":
+                interfaceService.handleEvent(InterfaceEvents.WORKING)
+            case "notunderstood":
+                interfaceService.handleEvent(InterfaceEvents.NOTUNDERSTOOD)
+            case "failed":
+                interfaceService.handleEvent(InterfaceEvents.FAILED)
+            case "success":
+                interfaceService.handleEvent(InterfaceEvents.SUCCESS)
+            case _:
+                return "<p>Unexpected event type.</p>"
+
+        print("interface test finished!")
+        return "<p>Playing event: " + event + "</p>"
+
+
+app = Quart(__name__)
+asyncio.run(background_service(app))
+app.run()
+
+

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from enum import Enum
 
@@ -92,11 +93,27 @@ class InterfaceService(Service):
     #     genericInterface.initFunc()
 
     def handleEvent(self, interfaceEvent, interfaceFilter=[], interfaceFilterType= "include"):
+
+        tasks = set()
+        loop = asyncio.get_event_loop()
+
         interfaces = self.filterInterfaces(interfaceFilter, interfaceFilterType)
+
+        def cb(task):
+            try:
+                result = task.result()
+                print("task finished!")
+            except Exception as e:
+                print("InterfaceService: Handling failed for interface.")
+            finally:
+                tasks.discard(task)
+
         for i in interfaces:
             if i.interface.isActive():
-                f = i.interface.handleEvent(interfaceEvent)
-                f.add_done_callback(lambda: print("Interface finished handling."))
+                t = loop.create_task(i.interface.handleEventInternal(interfaceEvent))
+                tasks.add(t)
+                t.add_done_callback(cb)
+        return True
 
     def filterInterfaces(self, interfaceFilter = [], interfaceFilterType = "include"):
         filter = interfaceFilter
