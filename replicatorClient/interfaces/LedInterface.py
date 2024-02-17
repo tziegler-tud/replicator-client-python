@@ -102,20 +102,20 @@ class LedInterface(Interface):
 
         match event.value:
             case "setupComplete":
-                return setup.play(self)
+                return await setup.play(self)
             case "ready":
-                return ready.play(self)
+                return await ready.play(self)
             case "wake":
-                return wake.play(self)
+                return await wake.play(self)
             # case "understood":
             #     return
             # case "working":
             case "notunderstood":
-                return notunderstood.play(self)
+                return await notunderstood.play(self)
             case "failed":
-                return fail.play(self)
+                return await fail.play(self)
             case "success":
-                return success.play(self)
+                return await success.play(self)
             case _:
                 self.warn("Unhandled event type.")
                 return Exception("Unhandled event type.")
