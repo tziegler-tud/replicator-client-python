@@ -110,7 +110,7 @@ class LedInterface(Interface):
             # case "understood":
             #     return
             # case "working":
-            case "notunderstood":
+            case "notUnderstood":
                 return await notunderstood.play(self)
             case "failed":
                 return await fail.play(self)

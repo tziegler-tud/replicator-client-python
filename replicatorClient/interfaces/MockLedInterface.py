@@ -3,7 +3,7 @@ import threading
 
 import typing
 
-from replicatorClient.LedAnimations.animations import setup
+from replicatorClient.LedAnimations.animations import ready, wake, working, setup, success, fail, notunderstood
 
 from replicatorClient.interfaces.Interface import Interface
 from .Led import Led
@@ -108,13 +108,19 @@ class MockLedInterface(Interface):
         match event.value:
             case "setupComplete":
                 return await setup.play(self)
-            # case "ready":
-            # case "wake":
+            case "ready":
+                return await ready.play(self)
+            case "wake":
+                return await wake.play(self)
+
             # case "understood":
             # case "working":
-            # case "notunderstood":
-            # case "failed":
-            # case "success":
+            case "notUnderstood":
+                return await notunderstood.play(self)
+            case "failed":
+                return await fail.play(self)
+            case "success":
+                return await success.play(self)
             case _:
                 self.warn("Unhandled event type.")
                 return Exception("Unhandled event type.")

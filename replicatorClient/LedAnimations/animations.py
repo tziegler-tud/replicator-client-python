@@ -103,7 +103,7 @@ success.setAnimation(successFunc)
 
 def failFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
-    leds = ledInterface.getLed()
+    leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=255, color_g=0, color_b=0, brightness=0.2)
     ledInterface.write()
@@ -121,7 +121,7 @@ fail.setAnimation(failFunc)
 
 def notunderstoodFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
-    leds = ledInterface.getLed()
+    leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=255, color_g=0, color_b=0, brightness=0.2)
     ledInterface.write()
@@ -149,7 +149,7 @@ def clear(ledInterface, delay):
 
 def setAll(ledInterface, color_r, color_g, color_b, brightness, delay):
     def func():
-        ledInterface.setAll(color_r, color_g, color_b, brightness)
+        ledInterface.setAll(color_r=color_r, color_g=color_g, color_b=color_b, brightness=brightness)
         ledInterface.write()
 
     t = threading.Timer(delay/1000, func)

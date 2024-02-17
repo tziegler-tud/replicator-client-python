@@ -41,21 +41,21 @@ class SoundInterface(Interface):
             case "setupComplete":
                 return await self.play(self.files["SETUPCOMPLETE"])
             case "ready":
-                return self.play(self.files["READY"])
+                return await self.play(self.files["READY"])
             case "wake":
-                return self.play(self.files["WAKE"])
+                return await self.play(self.files["WAKE"])
             case "understood":
                 # return self.play(self.files["UNDERSTOOD"])
                 pass
             case "working":
                 # return self.play(self.files["WORKING"])
                 pass
-            case "notunderstood":
-                return self.play(self.files["NOTUNDERSTOOD"])
+            case "notUnderstood":
+                return await self.play(self.files["NOTUNDERSTOOD"])
             case "failed":
-                return self.play(self.files["FAIL"])
+                return await self.play(self.files["FAIL"])
             case "success":
-                return self.play(self.files["SUCCESS"])
+                return await self.play(self.files["SUCCESS"])
             case _:
                 self.warn("Unhandled event type.")
                 return Exception("Unhandled event type.")

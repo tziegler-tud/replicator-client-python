@@ -31,7 +31,7 @@ class Interface:
             # case "wake":
             # case "understood":
             # case "working":
-            # case "notunderstood":
+            # case "notUnderstood":
             # case "failed":
             # case "success":
             case _:
