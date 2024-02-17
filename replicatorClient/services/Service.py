@@ -1,9 +1,28 @@
 import asyncio
 import logging
 from enum import Enum
+from .SettingsService import SettingsService
+
+
 
 class Service:
-    def __init__(self, settingsService):
+    instance = None
+
+    @staticmethod
+    def getInstance():
+        if Service.instance is not None:
+            return Service.instance
+        else:
+            return None
+
+    @staticmethod
+    def createInstance():
+        if Service.instance is not None:
+            return Service.instance
+        else:
+            Service.instance = Service()
+
+    def __init__(self):
         self.name = "unidentified Service"
         self.status = StatusEnum.NOTSTARTED
 
@@ -13,7 +32,8 @@ class Service:
         self.debugLabel = "Service: "
         self.enableDebug = True
 
-        self.settingsService = settingsService
+        self.settingsService = SettingsService.getInstance()
+        Service.instance = self
 
     def debug(self, message, level = 0):
         if self.settingsService.getSettings()["system"]["debugLevel"] <= level: print(self.debugLabel + message)
@@ -37,16 +57,16 @@ class Service:
             logging.error("ERROR: Service failed to start: "+ self.name)
             return False
 
-    async def stop(self):
+    def stop(self):
         self.debug("Stopping Service: " + self.name)
         try:
-            await self.stopService()
+            self.stopService()
         except:
             self.debug("Failed to stop Service: " + self.name)
         self.status = StatusEnum.STOPPED
         self.initStarted = False
 
-    async def stopService(self):
+    def stopService(self):
         # implemented by child classes
         return True
 

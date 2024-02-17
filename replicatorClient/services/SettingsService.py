@@ -10,6 +10,20 @@ class SettingsService:
     localStorage = localStoragePy('replicatorClient', 'json')
     configDir = CONFIG_DIR
 
+    @staticmethod
+    def getInstance():
+        if SettingsService.instance is not None:
+            return SettingsService.instance
+        else:
+            return None
+
+    @staticmethod
+    def createInstance():
+        if SettingsService.instance is not None:
+            return SettingsService.instance
+        else:
+            SettingsService.instance = SettingsService()
+
     def __init__(self):
         self.initStarted = False
         self.debugLabel = "SettingsService: "
@@ -26,6 +40,7 @@ class SettingsService:
                 "endpointDurationSec": 0.6,
             }
         }
+        SettingsService.instance = self
 
     def debug(self, message):
         logging.warning(self.debugLabel + message)

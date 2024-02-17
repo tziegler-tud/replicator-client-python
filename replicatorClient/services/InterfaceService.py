@@ -10,14 +10,32 @@ from ..interfaces.MockLedInterface import MockLedInterface
 
 
 class InterfaceService(Service):
-    def __init__(self, settingsService):
-        super().__init__(settingsService)
+    instance = None
+
+    @staticmethod
+    def getInstance():
+        if InterfaceService.instance is not None:
+            return InterfaceService.instance
+        else:
+            return None
+
+    @staticmethod
+    def createInstance():
+        if InterfaceService.instance is not None:
+            return InterfaceService.instance
+        else:
+            InterfaceService.instance = InterfaceService()
+
+    def __init__(self):
+        super().__init__()
         self.name = "InterfaceService"
         self.interfaces = []
         self.ledInterface = None
         self.soundInterface = None
 
-        self.interfaceConfig = settingsService.getInterfaceConfig()
+        self.interfaceConfig = self.settingsService.getInterfaceConfig()
+
+        InterfaceService.instance = self
 
     def initFunc(self, *args):
         print("Initializing InterfaceService...")
@@ -95,7 +113,10 @@ class InterfaceService(Service):
     def handleEvent(self, interfaceEvent, interfaceFilter=[], interfaceFilterType= "include"):
 
         tasks = set()
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
 
         interfaces = self.filterInterfaces(interfaceFilter, interfaceFilterType)
 

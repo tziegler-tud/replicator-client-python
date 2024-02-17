@@ -6,6 +6,10 @@ from flask import Flask
 
 from quart import Quart, render_template, websocket
 
+from replicatorClient.services.VoiceCommandService import VoiceCommandService
+from replicatorClient.services.VoiceRecognitionService import VoiceRecognitionService
+
+
 async def background_service(app):
 
     settingsService = SettingsService()
@@ -13,10 +17,19 @@ async def background_service(app):
 
     print(settingsService.getSettings())
 
-    interfaceService = InterfaceService(settingsService)
+    interfaceService = InterfaceService()
     interfaceService.start()
 
+    voiceCommandService = VoiceCommandService()
+    voiceCommandService.start()
+
+    voiceRecognitionService = VoiceRecognitionService()
+    voiceRecognitionService.start()
+
+
     interfaceService.handleEvent(InterfaceEvents.SETUPCOMPLETE)
+
+
     @app.route("/test/interface/<event>")
     async def interfaceTest(event):
         match event:
