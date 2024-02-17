@@ -129,7 +129,8 @@ def notunderstoodFunc(ledInterface, ledAnimation):
     setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
     clear(ledInterface, 600)
     setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=800)
-    delay(f.set_result, 900, True)
+    clear(ledInterface, 1000)
+    delay(f.set_result, 1000, True)
 
 notunderstood = LedAnimation("notunderstood", 1)
 notunderstood.setAnimation(notunderstoodFunc)

@@ -55,7 +55,7 @@ class LedInterface(Interface):
 
     def write(self):
         writeBuffer = self.generateWriteBuffer()
-        self.spi.xfer(writeBuffer)
+        self.spi.xfer3(writeBuffer)
 
     def generateLedBuffer(self):
         ledBufferArray = []
@@ -82,7 +82,7 @@ class LedInterface(Interface):
         b = kwargs.get("color_b", None)
 
         for led in self.leds:
-            if r and g and b: led.setColor(r,g,b)
+            if r is not None and g is not None and b is not None: led.setColors(r,g,b)
             else:
                 if r: led.setColor_r(r)
                 if g: led.setColor_g(g)

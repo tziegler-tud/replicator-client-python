@@ -82,16 +82,12 @@ class MockLedInterface(Interface):
         self.writeBuffer[pos + 3] = buffer[3]
 
     def setAll(self, **kwargs):
-        r = kwargs.get("color_r", None)
-        g = kwargs.get("color_g", None)
-        b = kwargs.get("color_b", None)
+        r = kwargs.get("color_r", 0)
+        g = kwargs.get("color_g", 0)
+        b = kwargs.get("color_b", 0)
 
         for led in self.leds:
-            if r is not None and g is not None and b is not None: led.setColors(r,g,b)
-            else:
-                if r: led.setColor_r(r)
-                if g: led.setColor_g(g)
-                if b: led.setColor_b(b)
+            led.setColors(r,g,b)
             if kwargs.get("brightness") is not None: led.setBrightness(kwargs.get("brightness"))
 
     def clearAll(self):
