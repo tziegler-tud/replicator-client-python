@@ -162,12 +162,21 @@ class InterfaceService(Service):
     def getAll(self):
         return self.interfaces
 
+    def getAllJson(self):
+        list = []
+        for item in self.interfaces:
+            list.append(item.to_json())
+        return list
+
 
 
 class savedInterface:
     def __init__(self, type, interface):
         self.type = type
         self.interface = interface
+
+    def to_json(self):
+        return {"type": self.type.value, "name": self.interface.name, "active": self.interface.active}
 
 class events(Enum):
     SETUPCOMPLETE = "setupComplete"

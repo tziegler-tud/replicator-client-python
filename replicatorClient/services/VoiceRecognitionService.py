@@ -6,7 +6,7 @@ from picovoice import Picovoice, PicovoiceError
 from pvrecorder import PvRecorder
 
 from .Service import Service, StatusEnum
-from .VoiceCommandService import VoiceCommandService
+from .VoiceCommandService import VoiceCommandService, Command
 
 
 class VoiceRecognitionService(Service):
@@ -45,7 +45,9 @@ class VoiceRecognitionService(Service):
         def inference_callback(inference):
             print("Inference: " + str(inference))
 
-            VoiceCommandService.processCommand(inference)
+
+            # threading.Thread(target=VoiceCommandService.processCommand, args=[inference]).start()
+            self.main_loop.run_until_complete(VoiceCommandService.processCommandAsync(Command(inference.is_understood, inference.intent, inference.slots)))
 
         try:
             self.picovoice = Picovoice(
@@ -84,7 +86,8 @@ class VoiceRecognitionService(Service):
         print("Not blocked!")
         return True
 
-    def start(self, *args):
+    def start(self, main_loop, *args):
+        self.main_loop = main_loop
         self.debug("Starting Service: " + self.name)
         if self.status == StatusEnum.RUNNING:
             return True

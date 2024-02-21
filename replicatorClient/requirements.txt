@@ -1,9 +1,12 @@
+aiohttp==3.9.3
 Flask==3.0.2
-localStoragePy==0.2.3
-localStoragePy==0.2.3
 Mock==5.1.0
 Mock.GPIO==0.1.8
+netifaces==0.10.6
+picovoice==3.0.2
+pvrecorder==1.2.2
 pyfs==0.0.8
+python-socketio==5.11.1
 quart==0.19.4
 RPi.GPIO==0.7.1
 spidev==3.6

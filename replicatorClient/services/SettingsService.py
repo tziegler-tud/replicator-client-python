@@ -1,14 +1,17 @@
+import time
+
 import fs
 import logging
-from localStoragePy import localStoragePy
 import json
 import os
-from replicatorClient.definitions import CONFIG_DIR
+from replicatorClient.definitions import CONFIG_DIR, STORAGE_DIR, RELEASE_VERSION
 
 class SettingsService:
 
-    localStorage = localStoragePy('replicatorClient', 'json')
+    instance = None
     configDir = CONFIG_DIR
+    storageDir = STORAGE_DIR
+    version = RELEASE_VERSION
 
     @staticmethod
     def getInstance():
@@ -29,16 +32,16 @@ class SettingsService:
         self.debugLabel = "SettingsService: "
         self.name= "SettingsService"
         self.settings = None
-        self.defaultSettings = {
-            "system": {
-                "debugLevel": 0,
-                "enableGpio": False
-            },
-            "recording": {
-                "porcupineSensitivity": 0.6,
-                "rhinoSensitivity": 0.7,
-                "endpointDurationSec": 0.6,
-            }
+        self.default_settings = {
+            "system_debugLevel": 0,
+            "system_enableGpio": False,
+
+            "recording_porcupineSensitivity": 0.6,
+            "recording_rhinoSensitivity": 0.7,
+            "recording_endpointDurationSec": 0.6,
+
+            "identifier": "Replicator-Client-" + str(time.time()),
+            "version": RELEASE_VERSION
         }
         SettingsService.instance = self
 
@@ -55,6 +58,13 @@ class SettingsService:
         print("Initializing SettingsService...")
 
         self.interfaceConfig = None
+
+        try:
+            i = open(os.path.join(SettingsService.configDir, "systemSettings.json"))
+            self.systemConfig = json.load(i)
+        except IOError:
+            logging.warning("Failed to read systemSettings.json from config directory. ")
+
         try:
             i = open(os.path.join(SettingsService.configDir, "interface.json"))
             self.interfaceConfig = json.load(i)
@@ -68,24 +78,19 @@ class SettingsService:
         except IOError:
             logging.warning("Failed to read interface.json from config directory. ")
 
-        try:
-            result = self.load()
-        except:
-            result = self.create()
-        else:
-            self.settings = {
-                "system": {
-                    "debugLevel": result["system"]["debugLevel"] or self.defaultSettings["system"]["debugLevel"],
-                    "enableGpio": result["system"]["enableGpio"] or self.defaultSettings["system"]["enableGpio"]
-                },
-                "recording": {
-                    "porcupineSensitivity": result["recording"]["porcupineSensitivity"] or self.defaultSettings["recording"]["porcupineSensitivity"],
-                    "rhinoSensitivity": result["recording"]["rhinoSensitivity"] or self.defaultSettings["recording"]["rhinoSensitivity"],
-                    "endpointDurationSec": result["recording"]["endpointDurationSec"] or self.defaultSettings["recording"]["endpointDurationSec"]
-                }
-            }
-        finally:
-            return self.settings
+        self.settings = self.load()
+        if self.settings is None:
+            self.settings = self.create()
+
+        return self.settings
+
+    def create(self, params=None):
+        defaults = self.default_settings
+        if params is None:
+            params = {}
+        params = {**defaults, **params}
+        self.settings = params
+        return self.save()
 
     def getSettings(self):
         return self.settings
@@ -96,30 +101,75 @@ class SettingsService:
     def getVoiceConfig(self):
         return self.voiceConfig
 
-    def load(self):
-        data = {
-                "system": {
-                    "debugLevel": self.getKey("debugLevel"),
-                    "enableGpio": self.getKey("enableGpio")
-                },
-                "recording": {
-                    "porcupineSensitivity": self.getKey("porcupineSensitivity"),
-                    "rhinoSensitivity": self.getKey("rhinoSensitivity"),
-                    "endpointDurationSec": self.getKey("endpointDurationSec"),
-                },
-                "identifier": self.getKey("identifier"),
-                "version": self.getKey("version")
-            }
-        return data
-
-    def create(self):
-        for key in self.defaultSettings:
-            self.localStorage.setItem(key, self.defaultSettings[key])
-
-
     def getKey(self, key):
-        return self.localStorage.getItem(key)
-
+        return self.settings[key]
     def setKey(self, key, value):
-        return self.localStorage.setItem(key, value)
+        self.settings[key] = value
+        self.save()
+
+    def save(self):
+        try:
+            content = json.dumps(self.settings)
+            # Check if systemStore dir exists
+            store_path = SettingsService.storageDir
+            file_path = os.path.join(SettingsService.storageDir, 'systemSettings.json')
+
+            if not os.path.exists(store_path):
+                os.makedirs(store_path)
+
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(content)
+
+            return self.settings  # Return a value indicating success if needed
+        except Exception as e:
+            print(f"Error saving settings: {e}")
+            return False  # Return a value indicating failure if needed
+
+    def load(self):
+        try:
+            store_path = SettingsService.storageDir
+            file_path = os.path.join(store_path, 'systemSettings.json')
+
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = file.read()
+                obj = json.loads(data)
+
+            return self.loadWithDefaults(obj)
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            return None  # Return a value indicating failure if needed
+
+    def loadWithDefaults(self, params):
+        result = {**self.default_settings, **params}
+        return result
+
+    def loadServer(self):
+        try:
+            file_path = os.path.join(SettingsService.storageDir, 'server.json')
+
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = file.read()
+                obj = json.loads(data)
+
+            return obj
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            return None  # Return a value indicating failure if needed
+    def saveServer(self, server):
+        try:
+            content = json.dumps(server.to_json())
+            # Check if systemStore dir exists
+            store_path = SettingsService.storageDir
+            file_path = os.path.join(store_path, 'server.json')
+
+            if not os.path.exists(store_path):
+                os.makedirs(store_path)
+
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(content)
+
+            return True  # Return a value indicating success if needed
+        except Exception as e:
+            print(f"Error saving settings: {e}")
+            return False  # Return a value indicating failure if needed
 

@@ -17,6 +17,9 @@ class Interface:
     def warn(self, msg):
         print("<WARNING>: " + self.name + ": " + msg)
 
+    def to_json(self):
+        return {"name": self.name, "active": self.active}
+
     async def handleEvent(self, event, **kwargs):
         if not self.active:
             self.error("Interface is inactive.")

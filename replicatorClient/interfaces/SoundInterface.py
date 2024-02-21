@@ -33,6 +33,11 @@ class SoundInterface(Interface):
     def initFunc(self):
         self.active = True
 
+    async def handleEvent(self, event, **kwargs):
+        if not self.active:
+            self.error("Interface is inactive.")
+        return await self.handleEventInternal(event, **kwargs)
+
     async def handleEventInternal(self, event, **kwargs):
         if self.interval is not None:
             self.interval = None
