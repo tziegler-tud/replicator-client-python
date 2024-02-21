@@ -2,6 +2,7 @@ aiohttp==3.9.3
 Flask==3.0.2
 Mock==5.1.0
 Mock.GPIO==0.1.8
+nest_asyncio==1.6.0
 netifaces==0.10.6
 picovoice==3.0.2
 pvrecorder==1.2.2
