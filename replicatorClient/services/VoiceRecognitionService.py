@@ -75,7 +75,7 @@ class VoiceRecognitionService(Service):
                     frames = self.recorder.read()
                     self.picovoice.process(frames)
                 except Exception as e:
-                    logging.error("Error while reading recorder: " + e)
+                    logging.error("Error while reading recorder: " + str(e))
 
         if self.recorder is not None:
             t = threading.Thread(target=startRecorder, args=[])

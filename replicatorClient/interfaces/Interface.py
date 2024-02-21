@@ -1,4 +1,6 @@
 import asyncio
+from enum import Enum
+
 
 class Interface:
     def __init__(self):
@@ -35,7 +37,8 @@ class Interface:
             # case "understood":
             # case "working":
             # case "notUnderstood":
-            # case "failed":
+            # case "fail":
+            # case "criticalFail":
             # case "success":
             case _:
                 self.warn("Unhandled event type.")
@@ -51,3 +54,14 @@ class Interface:
         self.active = False
         if self.interval is not None:
             self.interval = None
+
+class InterfaceEvents(Enum):
+    SETUPCOMPLETE = "setupComplete"
+    READY = "ready"
+    WAKE = "wake"
+    UNDERSTOOD = "understood"
+    WORKING = "working"
+    NOTUNDERSTOOD = "notUnderstood"
+    FAIL = "fail"
+    SUCCESS = "success"
+    CRITICALFAIL = "criticalFail"

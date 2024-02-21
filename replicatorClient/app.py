@@ -1,8 +1,11 @@
 import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 
 from replicatorClient.services.CommunicationService import CommunicationService
 from replicatorClient.services.SettingsService import SettingsService
-from replicatorClient.services.InterfaceService import InterfaceService, events as InterfaceEvents
+from replicatorClient.services.InterfaceService import InterfaceService
+from replicatorClient.interfaces.Interface import InterfaceEvents
 from flask import Flask
 
 from quart import Quart, request, jsonify, abort, render_template, websocket
@@ -32,7 +35,7 @@ async def background_service(app):
 
     interfaceService.handleEvent(InterfaceEvents.SETUPCOMPLETE)
 
-    await VoiceCommandService.processCommandAsync(Command(True, "Ignore", {}))
+    # await VoiceCommandService.processCommandAsync(Command(True, "FailOnPurpose", {}))
 
     @app.route("/test/interface/<event>")
     async def interfaceTest(event):
@@ -49,8 +52,8 @@ async def background_service(app):
                 interfaceService.handleEvent(InterfaceEvents.WORKING)
             case "notunderstood":
                 interfaceService.handleEvent(InterfaceEvents.NOTUNDERSTOOD)
-            case "failed":
-                interfaceService.handleEvent(InterfaceEvents.FAILED)
+            case "fail":
+                interfaceService.handleEvent(InterfaceEvents.FAIL)
             case "success":
                 interfaceService.handleEvent(InterfaceEvents.SUCCESS)
             case _:

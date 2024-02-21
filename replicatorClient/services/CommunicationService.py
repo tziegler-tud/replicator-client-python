@@ -15,7 +15,8 @@ from netifaces import interfaces, ifaddresses, AF_INET
 
 from .Server import Server, CommandResult
 from .AsyncService import AsyncService, StatusEnum
-from .InterfaceService import InterfaceService, events as InterfaceEvents
+from .InterfaceService import InterfaceService
+from replicatorClient.interfaces.Interface import InterfaceEvents
 from ..helpers.ApiResponse import ApiResponse, ReponseTypes
 
 class CommunicationService(AsyncService):
@@ -154,6 +155,8 @@ class CommunicationService(AsyncService):
         return s.getsockname()[0]
 
     async def handle_tcp_connection_request(self, server_information):
+        if not self.status == StatusEnum.RUNNING:
+            raise Exception("Service not running.")
         server_id = server_information['serverId']
         url = server_information['url']
         endpoints = server_information['endpoints']
@@ -236,32 +239,9 @@ class CommunicationService(AsyncService):
                 # Connection refused
                 raise Exception("Connection refused.")
 
-    def send_command_callback(self, command, cb):
-
-        if self.connection_status is not ConnectionStates.CONNECTED:
-            print("Unable to send command: not connected.")
-        def callback_wrapper(result):
-            cb(result)
-
-        async def run_async():
-            try:
-                # return True
-                result = await self.current_server.tcp_send_command(command)
-                # result.result contains ["success", "failed"]
-                # result.response contains server response
-                callback_wrapper(result)
-
-            except Exception as e:
-                # Failed to send command
-                print("Failed to send command to server.")
-                raise e
-
-        loop = asyncio.get_event_loop()
-        t = loop.create_task(run_async())
-        self.tasks.add(t)
-        loop.run_until_complete(t)
-
     async def send_command(self, command):
+        if not self.status == StatusEnum.RUNNING:
+            raise Exception("Service not running.")
         try:
             # return True
             result = await self.current_server.tcp_send_command(command)

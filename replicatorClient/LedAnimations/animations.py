@@ -4,7 +4,7 @@ import threading
 from .LedAnimation import LedAnimation
 import typing
 
-def readyFunc(ledInterface, ledAnimation: LedAnimation):
+def _readyFunc(ledInterface, ledAnimation: LedAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=0, brightness=0)
@@ -13,9 +13,9 @@ def readyFunc(ledInterface, ledAnimation: LedAnimation):
     return f
 
 ready = LedAnimation("ready", 1)
-ready.setAnimation(readyFunc)
+ready.setAnimation(_readyFunc)
 
-def wakeFunc(ledInterface, ledAnimation: LedAnimation):
+def _wakeFunc(ledInterface, ledAnimation: LedAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=255, brightness=0.1)
@@ -24,15 +24,15 @@ def wakeFunc(ledInterface, ledAnimation: LedAnimation):
     return f
 
 wake = LedAnimation("wake", 1)
-wake.setAnimation(wakeFunc)
+wake.setAnimation(_wakeFunc)
 
-def workingFunc(ledInterface, ledAnimation: LedAnimation):
+def _workingFunc(ledInterface, ledAnimation: LedAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     ledInterface.setAll(color_r=0, color_g=0, color_b=255, brightness=0.1)
     ledInterface.write()
 
-    nextFrame = circle(ledInterface, 0, 1)
+    nextFrame = __circle(ledInterface, 0, 1)
 
     async def circleFunc():
         await nextFrame()
@@ -42,17 +42,17 @@ def workingFunc(ledInterface, ledAnimation: LedAnimation):
     return f
 
 working = LedAnimation("working", 1)
-working.setAnimation(workingFunc)
+working.setAnimation(_workingFunc)
 
 
-def setupFunc(ledInterface, ledAnimation: LedAnimation):
+def _setupFunc(ledInterface, ledAnimation: LedAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
     ledInterface.write()
 
-    nextFrame = fillingCircle(ledInterface, 0, 0.1)
+    nextFrame = __fillingCircle(ledInterface, 0, 0.1)
 
     def circleFunc():
         nonlocal i
@@ -64,23 +64,23 @@ def setupFunc(ledInterface, ledAnimation: LedAnimation):
             ledInterface.write()
             if i == ledInterface.ledAmount:
                 ledInterface.clearInterval()
-                clear(ledInterface, 2000)
+                __clear(ledInterface, 2000)
                 f.set_result(True)
 
     ledInterface.setInterval(circleFunc, 100)
     return f
 
 setup = LedAnimation("setup",1)
-setup.setAnimation(setupFunc)
+setup.setAnimation(_setupFunc)
 
-def successFunc(ledInterface, ledAnimation):
+def _successFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
     ledInterface.write()
 
-    nextFrame = fillingCircle(ledInterface, 0, 0.1)
+    nextFrame = __fillingCircle(ledInterface, 0, 0.1)
 
     def circleFunc():
         nonlocal i
@@ -92,54 +92,73 @@ def successFunc(ledInterface, ledAnimation):
             ledInterface.write()
             if i == ledInterface.ledAmount:
                 ledInterface.clearInterval()
-                clear(ledInterface, 2000)
+                __clear(ledInterface, 2000)
                 f.set_result(True)
 
     ledInterface.setInterval(circleFunc, 100)
     return f
 
 success = LedAnimation("success", 1)
-success.setAnimation(successFunc)
+success.setAnimation(_successFunc)
 
-def failFunc(ledInterface, ledAnimation):
+def _failFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=255, color_g=0, color_b=0, brightness=0.2)
     ledInterface.write()
-    clear(ledInterface,100)
-    setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=200)
-    clear(ledInterface,300)
-    setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
-    clear(ledInterface,500)
-    setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=600)
-    clear(ledInterface,800)
-    delay(f.set_result,900,True)
+    __clear(ledInterface,100)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=200)
+    __clear(ledInterface,300)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
+    __clear(ledInterface,500)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=600)
+    __clear(ledInterface,800)
+    __delay(f.set_result,900,True)
 
 fail = LedAnimation("fail", 1)
-fail.setAnimation(failFunc)
+fail.setAnimation(_failFunc)
 
-def notunderstoodFunc(ledInterface, ledAnimation):
+def _criticalFailFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
     ledInterface.setAll(color_r=255, color_g=0, color_b=0, brightness=0.2)
     ledInterface.write()
-    clear(ledInterface, 200)
-    setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
-    clear(ledInterface, 600)
-    setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=800)
-    clear(ledInterface, 1000)
-    delay(f.set_result, 1000, True)
+    __clear(ledInterface,100)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=200)
+    __clear(ledInterface,300)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
+    __clear(ledInterface,500)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=600)
+    __clear(ledInterface,800)
+    __delay(f.set_result,900,True)
+
+criticalFail = LedAnimation("fail", 1)
+criticalFail.setAnimation(_criticalFailFunc)
+
+
+def _notunderstoodFunc(ledInterface, ledAnimation):
+    f = asyncio.Future()
+    leds = ledInterface.getLeds()
+    i = 0
+    ledInterface.setAll(color_r=255, color_g=0, color_b=0, brightness=0.2)
+    ledInterface.write()
+    __clear(ledInterface, 200)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=400)
+    __clear(ledInterface, 600)
+    __setAll(ledInterface, color_r=255, color_g=0, color_b=0, brightness=0.2, delay=800)
+    __clear(ledInterface, 1000)
+    __delay(f.set_result, 1000, True)
 
 notunderstood = LedAnimation("notunderstood", 1)
-notunderstood.setAnimation(notunderstoodFunc)
+notunderstood.setAnimation(_notunderstoodFunc)
 
 
 
 
 
-def clear(ledInterface, delay):
+def __clear(ledInterface, delay):
     def func():
         print("clearing leds")
         ledInterface.clearAll()
@@ -148,7 +167,7 @@ def clear(ledInterface, delay):
     t = threading.Timer(delay/1000, func)
     t.start()
 
-def setAll(ledInterface, color_r, color_g, color_b, brightness, delay):
+def __setAll(ledInterface, color_r, color_g, color_b, brightness, delay):
     def func():
         ledInterface.setAll(color_r=color_r, color_g=color_g, color_b=color_b, brightness=brightness)
         ledInterface.write()
@@ -156,12 +175,12 @@ def setAll(ledInterface, color_r, color_g, color_b, brightness, delay):
     t = threading.Timer(delay/1000, func)
     t.start()
 
-def delay(func, delay, *args):
+def __delay(func, delay, *args):
     t = threading.Timer(delay / 1000, func, args)
     t.start()
 
 
-def circle(ledInterface, startBrighness: int, endBrightness: int):
+def __circle(ledInterface, startBrighness: int, endBrightness: int):
 
     index = 0
     maxIndex = ledInterface.ledAmount -1
@@ -185,7 +204,7 @@ def circle(ledInterface, startBrighness: int, endBrightness: int):
 
     return nextFrame
 
-def fillingCircle(ledInterface, startBrightness: int, endBrightness: int):
+def __fillingCircle(ledInterface, startBrightness: int, endBrightness: int):
     index = 0
     maxIndex = ledInterface.ledAmount - 1
     leds = ledInterface.getLeds()

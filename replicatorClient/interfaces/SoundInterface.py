@@ -17,6 +17,7 @@ class SoundInterface(Interface):
             "READY": "power_up1_clean.wav",
             "WAKE": "communications_start_transmission.wav",
             "FAIL": "fail.wav",
+            "CRITICALFAIL": "input_ok_2_clean.wav",
             "NOTUNDERSTOOD": "notunderstood.wav",
             "SUCCESS": "communications_end_transmission.wav"
         }
@@ -26,6 +27,7 @@ class SoundInterface(Interface):
             "READY": fs.join(self.soundDirPath, self.sounds["READY"]),
             "WAKE": fs.join(self.soundDirPath, self.sounds["WAKE"]),
             "FAIL": fs.join(self.soundDirPath, self.sounds["FAIL"]),
+            "CRITICALFAIL": fs.join(self.soundDirPath, self.sounds["CRITICALFAIL"]),
             "NOTUNDERSTOOD": fs.join(self.soundDirPath, self.sounds["NOTUNDERSTOOD"]),
             "SUCCESS": fs.join(self.soundDirPath, self.sounds["SUCCESS"]),
         }
@@ -57,8 +59,10 @@ class SoundInterface(Interface):
                 pass
             case "notUnderstood":
                 return await self.play(self.files["NOTUNDERSTOOD"])
-            case "failed":
+            case "fail":
                 return await self.play(self.files["FAIL"])
+            case "criticalFail":
+                return await self.play(self.files["CRITICALFAIL"])
             case "success":
                 return await self.play(self.files["SUCCESS"])
             case _:

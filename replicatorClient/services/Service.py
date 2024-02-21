@@ -48,8 +48,9 @@ class Service:
         self.initStarted = True
         self.systemSettings = self.settingsService.getSettings()
         try:
-            self.status = StatusEnum.RUNNING
             self.initFunc(args)
+            self.status = StatusEnum.RUNNING
+            self.debug(self.name + "Service started successfully.")
             return True
         except Exception as e:
             self.status = StatusEnum.FAILED

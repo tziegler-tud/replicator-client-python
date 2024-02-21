@@ -4,13 +4,13 @@ import threading
 import spidev
 import typing
 
-from replicatorClient.LedAnimations.animations import ready, wake, working, setup, success, fail, notunderstood
+from replicatorClient.LedAnimations.animations import ready, wake, working, setup, success, fail, criticalFail, notunderstood
 try:
     import RPi.GPIO as GPIO
 except:
     import Mock.GPIO as GPIO
 
-from replicatorClient.interfaces.Interface import Interface
+from replicatorClient.interfaces.Interface import Interface, InterfaceEvents
 from .Led import Led
 
 
@@ -100,21 +100,23 @@ class LedInterface(Interface):
         if self.interval is not None:
             self.interval = None
 
-        match event.value:
-            case "setupComplete":
+        match event:
+            case InterfaceEvents.SETUPCOMPLETE:
                 return await setup.play(self)
-            case "ready":
+            case InterfaceEvents.READY:
                 return await ready.play(self)
-            case "wake":
+            case InterfaceEvents.WAKE:
                 return await wake.play(self)
             # case "understood":
             #     return
             # case "working":
-            case "notUnderstood":
+            case InterfaceEvents.NOTUNDERSTOOD:
                 return await notunderstood.play(self)
-            case "failed":
+            case InterfaceEvents.FAIL:
                 return await fail.play(self)
-            case "success":
+            case InterfaceEvents.CRITICALFAIL:
+                return await criticalFail.play(self)
+            case InterfaceEvents.SUCCESS:
                 return await success.play(self)
             case _:
                 self.warn("Unhandled event type.")

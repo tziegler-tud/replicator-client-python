@@ -1,9 +1,12 @@
 import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 import logging
 from enum import Enum
 
-from .Service import Service
+from .Service import Service, StatusEnum
 
+from replicatorClient.interfaces.Interface import Interface, InterfaceEvents
 from replicatorClient.interfaces.LedInterface import LedInterface
 from replicatorClient.interfaces.SoundInterface import SoundInterface
 from ..interfaces.MockLedInterface import MockLedInterface
@@ -29,6 +32,7 @@ class InterfaceService(Service):
     def __init__(self):
         super().__init__()
         self.name = "InterfaceService"
+        self.debugLabel = "InterfaceService: "
         self.interfaces = []
         self.ledInterface = None
         self.soundInterface = None
@@ -38,7 +42,6 @@ class InterfaceService(Service):
         InterfaceService.instance = self
 
     def initFunc(self, *args):
-        print("Initializing InterfaceService...")
         errMsg = "Failed to initialize InterfaceService. "
 
         interfaces = self.interfaceConfig["interfaces"]
@@ -48,7 +51,11 @@ class InterfaceService(Service):
         for interfaceConfig in interfaces:
             self.loadInterfaceFromConfig(interfaceConfig)
 
+
     def loadInterfaceFromConfig(self, interfaceConfig):
+
+        if self.status == StatusEnum.FAILED:
+            return False
         errMsg = "Failed to load interface: "
         if type(interfaceConfig) is str:
           interfaceConfig = {
@@ -81,6 +88,7 @@ class InterfaceService(Service):
             self.debug("Interface for type '{}' created successfully.".format(itype))
 
     def addLedInterface(self, interfaceArgs):
+        self.debug("Setting up LED Interface.")
         type = types.LED
         if "ledAmount" not in interfaceArgs: interfaceArgs["ledAmount"] = 1
         if "clockDivider" not in interfaceArgs: interfaceArgs["clockDivider"] = 128
@@ -92,13 +100,15 @@ class InterfaceService(Service):
             ledInterface = LedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
         ledInterface.initFunc()
         self.interfaces.append(savedInterface(type, ledInterface))
+        self.debug("LED Interface is ready.")
 
     def addSoundInterface(self, interfaceArgs):
+        self.debug("Setting up Sound Interface.")
         type = types.SOUND
         soundInterface = SoundInterface()
         soundInterface.initFunc()
         self.interfaces.append(savedInterface(type, soundInterface))
-
+        self.debug("Sound Interface is ready.")
 
     # def addDisplayInterface(self, interfaceArgs):
     #     type = types.DISPLAY
@@ -111,7 +121,10 @@ class InterfaceService(Service):
     #     genericInterface.initFunc()
 
     def handleEvent(self, interfaceEvent, interfaceFilter=[], interfaceFilterType= "include"):
-
+        if not self.status == StatusEnum.RUNNING:
+            self.debug("Serivce not running.")
+            return False
+        self.debug("InterfaceService: Trying to handle event: " + interfaceEvent.value)
         tasks = set()
         try:
             loop = asyncio.get_event_loop()
@@ -134,6 +147,7 @@ class InterfaceService(Service):
                 t = loop.create_task(i.interface.handleEventInternal(interfaceEvent))
                 tasks.add(t)
                 t.add_done_callback(cb)
+                loop.run_until_complete(t)
         return True
 
     def filterInterfaces(self, interfaceFilter = [], interfaceFilterType = "include"):
@@ -155,14 +169,20 @@ class InterfaceService(Service):
 
 
     def getInterfaceByType(self, type):
+        if not self.status == StatusEnum.RUNNING:
+            return None
         for item in self.interfaces:
             if item.type.value == type: return item
         return None
 
     def getAll(self):
+        if not self.status == StatusEnum.RUNNING:
+            return []
         return self.interfaces
 
     def getAllJson(self):
+        if not self.status == StatusEnum.RUNNING:
+            return []
         list = []
         for item in self.interfaces:
             list.append(item.to_json())
@@ -178,15 +198,6 @@ class savedInterface:
     def to_json(self):
         return {"type": self.type.value, "name": self.interface.name, "active": self.interface.active}
 
-class events(Enum):
-    SETUPCOMPLETE = "setupComplete"
-    READY = "ready"
-    WAKE = "wake"
-    UNDERSTOOD = "understood"
-    WORKING = "working"
-    NOTUNDERSTOOD = "notUnderstood"
-    FAILED = "failed"
-    SUCCESS = "success"
 
 class types(Enum):
     LED = "LedInterface"
