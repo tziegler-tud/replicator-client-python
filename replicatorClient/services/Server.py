@@ -63,18 +63,19 @@ class Server:
 
     async def tcp_connect(self):
 
-        if self.socket:
+        if self.socket is not None:
             if self.socket.connected:
                 return self.socket
             else:
-                await self.tcp_reconnect()
+                # await self.tcp_reconnect()
                 return self.socket
         else:
-            await self.tcp_create_socket()
+            socket_promise = await self.tcp_create_socket()
+            # await socket_promise
             return self.socket
 
     async def tcp_create_socket(self, overwrite=True):
-        if self.socket:
+        if self.socket is not None:
             if not overwrite:
                 raise Exception("Socket exists already.")
 
@@ -82,7 +83,17 @@ class Server:
             raise Exception("No clientId found.")
 
         auth = {'clientId': self.client_id}
-        socket = socketio.AsyncClient(logger=True, engineio_logger=True)
+        socket = socketio.AsyncClient(reconnection=True, logger=True, engineio_logger=True)
+
+        # loop = asyncio.get_running_loop()
+        main_event_loop = asyncio.get_event_loop()
+        # f = loop.create_future()
+
+        # def resolve(result):
+        #     try:
+        #         f.set_result(result)
+        #     except asyncio.exceptions.InvalidStateError as e:
+        #         print("Cannot resolve connection: Already resolved.")
 
 
         @socket.on('connect')
@@ -93,19 +104,30 @@ class Server:
             self.connected = socket.connected
             self.last_connection = datetime.now()
             self.socket = socket
-            return socket
+            # resolve(socket)
 
-        await socket.connect(self.endpoint_url, auth=auth , wait_timeout=10)
-        self.socket_add_listeners(socket)
-    def socket_add_listeners(self, socket):
-        @self.socket.on('message')
+        @socket.on('message')
         async def on_message(data):
             print(f"Received message: {data}")
 
-        @self.socket.on('settings')
+        @socket.on('settings')
         async def on_settings(data):
             settings = self.settingsService.getSettings()
             return settings
+
+        # asyncio.run_coroutine_threadsafe(socket.connect(self.endpoint_url, auth=auth , wait_timeout=10), loop)
+        await socket.connect(self.endpoint_url, auth=auth, wait_timeout=10)
+        # return f
+
+    def socket_add_listeners(self):
+        # @self.socket.on('message')
+        # async def on_message(data):
+        #     print(f"Received message: {data}")
+        #
+        # @self.socket.on('settings')
+        # async def on_settings(data):
+        #     settings = self.settingsService.getSettings()
+        #     return settings
 
         @self.socket.on('interfaces')
         async def on_settings(data):
@@ -121,7 +143,7 @@ class Server:
 
         @self.socket.on('disconnect')
         async def on_disconnect():
-            print(socket.sid)  # undefined
+            print(self.socket.sid)  # undefined
             self.socket = None
             self.connected = False
 
@@ -229,24 +251,25 @@ class Server:
 
     async def tcp_send_command(self, command):
         try:
+        # if True:
             result = None
-            await self.tcp_connect()
+            socket = await self.tcp_connect()
             command_data = {'command': command.to_json(), 'clientId': self.client_id}
             # await self.socket.emit('message', 'Sending soon!')
             loop = asyncio.get_running_loop()
             main_event_loop = asyncio.get_event_loop()
             main_event_loop.run_until_complete(self.socket.emit("message", "Sending Soon!"))
-            f = loop.create_future()
+            f = main_event_loop.create_future()
 
 
             def resolve(result):
                 f.set_result(result)
-            @self.socket.on('commandSuccessful')
+            @socket.on('commandSuccessful')
             async def on_command_successful(response):
                 nonlocal result
                 result = CommandResult(response)
                 resolve(result)
-            @self.socket.on('commandFailed')
+            @socket.on('commandFailed')
             async def on_command_failed(response):
                 nonlocal result
                 result = CommandResult(response)
@@ -255,16 +278,11 @@ class Server:
                 print("Callback received!")
 
             # await self.socket.emit(event="processCommand", data=command_data, callback=cb)
-            asyncio.run_coroutine_threadsafe(self.socket.emit(event="processCommand", data=command_data, callback=cb), loop)
+            # asyncio.run_coroutine_threadsafe(socket.emit(event="processCommand", data=command_data, callback=cb), main_event_loop)
+            # main_event_loop.run_until_complete(socket.emit(event="processCommand", data=command_data, callback=cb))
+            await socket.call(event="processCommand", data=command_data, timeout=10)
             return f
-            # await self.socket.wait()
-            # return result
 
-            # await self.socket.call("processCommand", data=command_data, timeout=30)
-
-            # await socket.call(event='processCommand', namespace="/", data=command_data, timeout=10)
-            # await self.socket.wait()
-            # await socket.wait()
         except Exception as err:
             raise err
 

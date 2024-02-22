@@ -86,27 +86,26 @@ class CommunicationService(AsyncService):
                 try:
 
                     self.socket = await self.current_server.tcp_connect()
+                    self.current_server.socket_add_listeners()
                     # Connection successful
                     self.connection_status = ConnectionStates.CONNECTED
+                    # await self.socket.
                     # await self.socket.wait()
                     # add listeners in different thread
                     # await self.current_server.socket_add_listeners()
                     # self.socket.start_background_task(self.socket.wait())
-                    async def connect():
-                        self.socket = await self.current_server.tcp_connect()
-                        # Connection successful
-                        self.connection_status = ConnectionStates.CONNECTED
+                    async def add_listeners():
+                        # self.socket = await self.current_server.tcp_connect()
+                        # # Connection successful
+                        # self.connection_status = ConnectionStates.CONNECTED
                         # add listeners in different thread
-                        # await self.current_server.socket_add_listeners()
-                        # await self.socket.wait()
+                        self.current_server.socket_add_listeners()
+                        await self.socket.wait()
                     def thread_runner():
                         loop = asyncio.get_event_loop()
-                        asyncio.set_event_loop(loop)
-                        task = loop.create_task(connect())
+                        task = loop.create_task(add_listeners())
                         self.tasks.add(task)
-                        # loop.run_forever()
                         loop.run_until_complete(task)
-                        # loop.close()
                     # t = threading.Thread(target=thread_runner, args=[])
                     # t.start()
                 except Exception as err:
@@ -129,13 +128,6 @@ class CommunicationService(AsyncService):
             return True
         self.initStarted = True
         self.systemSettings = self.settingsService.getSettings()
-        # def thread_runner():
-        #     loop = asyncio.new_event_loop()
-        #     # asyncio.set_event_loop(loop)
-        #     self.loop = loop
-        #     task = loop.create_task(self.initFunc(args))
-        #     self.tasks.add(task)
-        #     loop.run_until_complete(task)
         try:
             self.status = StatusEnum.RUNNING
             await self.initFunc(args)
@@ -146,7 +138,9 @@ class CommunicationService(AsyncService):
             logging.error("ERROR: Service failed to start: " + self.name)
             return False
 
-
+    async def listen(self):
+        if self.socket is not None:
+            await self.socket.wait()
 
         
     def get_ip_address(self):
@@ -242,18 +236,26 @@ class CommunicationService(AsyncService):
     async def send_command(self, command):
         if not self.status == StatusEnum.RUNNING:
             raise Exception("Service not running.")
+
+        # return True
         try:
-            # return True
             result = await self.current_server.tcp_send_command(command)
-            await result
-            # result.result contains ["success", "failed"]
-            # result.response contains server response
-            return result.result()
-    
         except Exception as e:
-            # Failed to send command
-            print("Failed to send command to server.")
-            raise e
+            self.debug("Timeout error while sending")
+            self.debug("Trying to reconnect...")
+            await self.current_server.tcp_connect()
+            self.debug("Reconnection successfull. Retrying to send command.")
+        finally:
+            try:
+                await result
+                # result.result contains ["success", "failed"]
+                # result.response contains server response
+                return result.result()
+
+            except Exception as e:
+                # Failed to send command
+                print("Failed to send command to server.")
+                raise e
 
     def find_network_interfaces(self):
         results = {
