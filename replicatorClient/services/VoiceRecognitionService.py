@@ -47,7 +47,8 @@ class VoiceRecognitionService(Service):
 
 
             # threading.Thread(target=VoiceCommandService.processCommand, args=[inference]).start()
-            self.main_loop.run_until_complete(VoiceCommandService.processCommandAsync(Command(inference.is_understood, inference.intent, inference.slots)))
+            # self.main_loop.run_until_complete(VoiceCommandService.processCommandAsync(Command(inference.is_understood, inference.intent, inference.slots)))
+            asyncio.run_coroutine_threadsafe(VoiceCommandService.processCommandAsync(Command(inference.is_understood, inference.intent, inference.slots)), self.main_loop)
 
         try:
             self.picovoice = Picovoice(
