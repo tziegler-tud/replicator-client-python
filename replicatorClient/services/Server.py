@@ -7,11 +7,15 @@ import json
 import socketio
 import asyncio
 import nest_asyncio
+
+from replicatorClient.helpers.TcpResponseGenerator import tcp_response_generator
+
 nest_asyncio.apply()
 import aiohttp
 from datetime import datetime
 from replicatorClient.services.InterfaceService import InterfaceService
 from replicatorClient.services.SettingsService import SettingsService
+from replicatorClient.services.ServerCommandService import ServerCommandService
 
 
 class Server:
@@ -85,17 +89,6 @@ class Server:
         auth = {'clientId': self.client_id}
         socket = socketio.AsyncClient(reconnection=True, logger=True, engineio_logger=True)
 
-        # loop = asyncio.get_running_loop()
-        main_event_loop = asyncio.get_event_loop()
-        # f = loop.create_future()
-
-        # def resolve(result):
-        #     try:
-        #         f.set_result(result)
-        #     except asyncio.exceptions.InvalidStateError as e:
-        #         print("Cannot resolve connection: Already resolved.")
-
-
         @socket.on('connect')
         async def on_connect():
             print(socket.sid)  # x8WIv7-mJelg7on_ALbx
@@ -112,48 +105,45 @@ class Server:
 
         @socket.on('settings')
         async def on_settings(data):
-            settings = self.settingsService.getSettings()
+            settings = self.settingsService.getSettings_server_format()
             return settings
 
-        # asyncio.run_coroutine_threadsafe(socket.connect(self.endpoint_url, auth=auth , wait_timeout=10), loop)
-        await socket.connect(self.endpoint_url, auth=auth, wait_timeout=10)
-        # return f
-
-    def socket_add_listeners(self):
-        # @self.socket.on('message')
-        # async def on_message(data):
-        #     print(f"Received message: {data}")
-        #
-        # @self.socket.on('settings')
-        # async def on_settings(data):
-        #     settings = self.settingsService.getSettings()
-        #     return settings
-
-        @self.socket.on('interfaces')
+        @socket.on('interfaces')
         async def on_settings(data):
             interfaces = InterfaceService.getInstance().getAllJson()
             return interfaces
 
-        @self.socket.on('updateSettings')
+        @socket.on('updateSettings')
         async def on_settings(data):
             for key in data:
-                self.settingsService.setKey(key, data["key"])
-            settings = self.settingsService.getSettings()
+                if isinstance(data[key], dict):
+                    for innerKey in data[key]:
+                        self.settingsService.setKey_server_format(category=key, key=innerKey, data=data[key][innerKey])
+                else:
+                    self.settingsService.setKey_server_format(key=key, data=data[key])
+            settings = self.settingsService.getSettings_server_format()
             return settings
 
-        @self.socket.on('disconnect')
+        @socket.on('command')
+        async def on_command(data):
+            result = ServerCommandService.processCommand(data)
+            return result
+
+        @socket.on('disconnect')
         async def on_disconnect():
             print(self.socket.sid)  # undefined
             self.socket = None
             self.connected = False
 
-        @self.socket.on('connect_error')
+        @socket.on('connect_error')
         async def on_connect_error(err):
             print("Failed to connect to server")
 
-        @self.socket.on('requestClientAction')
+        @socket.on('requestClientAction')
         async def on_request_client_action(data):
             print(f"Server requested action: {data}")
+
+        await socket.connect(self.endpoint_url, auth=auth, wait_timeout=10)
 
     async def tcp_reconnect(self):
         err_msg = "Failed to reconnect to socket: "
@@ -251,12 +241,9 @@ class Server:
 
     async def tcp_send_command(self, command):
         try:
-        # if True:
             result = None
             socket = await self.tcp_connect()
             command_data = {'command': command.to_json(), 'clientId': self.client_id}
-            # await self.socket.emit('message', 'Sending soon!')
-            loop = asyncio.get_running_loop()
             main_event_loop = asyncio.get_event_loop()
             main_event_loop.run_until_complete(self.socket.emit("message", "Sending Soon!"))
             f = main_event_loop.create_future()
@@ -274,12 +261,7 @@ class Server:
                 nonlocal result
                 result = CommandResult(response)
                 resolve(result)
-            def cb():
-                print("Callback received!")
 
-            # await self.socket.emit(event="processCommand", data=command_data, callback=cb)
-            # asyncio.run_coroutine_threadsafe(socket.emit(event="processCommand", data=command_data, callback=cb), main_event_loop)
-            # main_event_loop.run_until_complete(socket.emit(event="processCommand", data=command_data, callback=cb))
             await socket.call(event="processCommand", data=command_data, timeout=10)
             return f
 

@@ -67,12 +67,37 @@ class Service:
         self.status = StatusEnum.STOPPED
         self.initStarted = False
 
+
+    def restart(self, *args):
+        self.status = StatusEnum.NOTSTARTED
+        try:
+            self.restartService(args)
+        except:
+            self.debug("Failed to restart Service: " + self.name)
+            self.status = StatusEnum.FAILED
+        else:
+            self.status = StatusEnum.RUNNING
+
+
+
     def stopService(self):
         # implemented by child classes
         return True
 
+    def restartService(self, *args):
+        self.debug("Restarting Service: " + self.name)
+        try:
+            self.stop()
+            self.start(args)
+        except:
+            self.status = StatusEnum.FAILED
+            self.debug("Failed to restart Service: " + self.name)
+
+        else:
+            self.debug("Service restarted successfully: " + self.name)
+
     def getState(self):
-        return self.state
+        return self.status
 
 class StatusEnum(Enum):
     NOTSTARTED = 0

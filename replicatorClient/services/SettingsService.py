@@ -95,6 +95,21 @@ class SettingsService:
     def getSettings(self):
         return self.settings
 
+    def getSettings_server_format(self):
+        return {
+            "system": {
+                "debugLevel": self.settings["system_debugLevel"],
+                "enableGpio": self.settings["system_enableGpio"],
+            },
+            "recording": {
+                "porcupineSensitivity": self.settings["recording_porcupineSensitivity"],
+                "rhinoSensitivity": self.settings["recording_rhinoSensitivity"],
+                "endpointDurationSec": self.settings["recording_endpointDurationSec"]
+            },
+            "identifier": self.settings["identifier"],
+            "version": self.settings["version"]
+        }
+
     def getInterfaceConfig(self):
         return self.interfaceConfig
 
@@ -106,6 +121,43 @@ class SettingsService:
     def setKey(self, key, value):
         self.settings[key] = value
         self.save()
+
+    def getKey_server_format(self, key, data, category=""):
+        # key is either "recording" "system"
+        internalKey = self.server_key_to_internal_key(category, key)
+        return self.settings[internalKey]
+
+    def setKey_server_format(self, key, data, category=""):
+        # key is either "recording" "system"
+        internalKey = self.server_key_to_internal_key(category, key)
+        self.settings[internalKey] = data
+        self.save()
+
+    # Server uses nested json keys: ["recording"]["endpointDurationSec"]
+    def server_key_to_internal_key(self, categoryKey, innerKey):
+        internalKey = ""
+        if len(categoryKey) == 0:
+            match innerKey:
+                case "version":
+                    internalKey = "version"
+                case "identifier":
+                    internalKey = "identifier"
+
+        elif categoryKey == "recording":
+            match innerKey:
+                case "porcupineSensitivity":
+                    internalKey = "recording_porcupineSensitivity"
+                case "rhinoSensitivity":
+                    internalKey = "recording_rhinoSensitivity"
+                case "endpointDurationSec":
+                    internalKey = "recording_endpointDurationSec"
+
+        elif categoryKey == "system":
+            match innerKey:
+                case "debugLevel":
+                    internalKey = "system_debugLevel"
+        return internalKey
+
 
     def save(self):
         try:

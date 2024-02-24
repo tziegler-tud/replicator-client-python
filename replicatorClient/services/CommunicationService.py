@@ -86,28 +86,9 @@ class CommunicationService(AsyncService):
                 try:
 
                     self.socket = await self.current_server.tcp_connect()
-                    self.current_server.socket_add_listeners()
                     # Connection successful
                     self.connection_status = ConnectionStates.CONNECTED
-                    # await self.socket.
-                    # await self.socket.wait()
-                    # add listeners in different thread
-                    # await self.current_server.socket_add_listeners()
-                    # self.socket.start_background_task(self.socket.wait())
-                    async def add_listeners():
-                        # self.socket = await self.current_server.tcp_connect()
-                        # # Connection successful
-                        # self.connection_status = ConnectionStates.CONNECTED
-                        # add listeners in different thread
-                        self.current_server.socket_add_listeners()
-                        await self.socket.wait()
-                    def thread_runner():
-                        loop = asyncio.get_event_loop()
-                        task = loop.create_task(add_listeners())
-                        self.tasks.add(task)
-                        loop.run_until_complete(task)
-                    # t = threading.Thread(target=thread_runner, args=[])
-                    # t.start()
+
                 except Exception as err:
                     # Connection error
                     print("Failed to connect to last known server. Reason: " + str(err))

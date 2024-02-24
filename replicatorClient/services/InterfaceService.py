@@ -72,11 +72,11 @@ class InterfaceService(Service):
             return False
         try:
             match itype:
-                case types.LED.value:
+                case InterfaceTypes.LED.value:
                     self.addLedInterface(interfaceConfig["constructorArgs"])
-                case types.SOUND.value:
+                case InterfaceTypes.SOUND.value:
                     self.addSoundInterface(interfaceConfig["constructorArgs"])
-                case types.DISPLAY.value, types.GENERIC:
+                case InterfaceTypes.DISPLAY.value, InterfaceTypes.GENERIC:
                     self.debug(errMsg + "Interface of type '{}' not supported by current version.".format(itype))
                     # self.addGenericInterface(interfaceConfig.constructorArgs)
                     pass
@@ -89,7 +89,7 @@ class InterfaceService(Service):
 
     def addLedInterface(self, interfaceArgs):
         self.debug("Setting up LED Interface.")
-        type = types.LED
+        type = InterfaceTypes.LED
         if "ledAmount" not in interfaceArgs: interfaceArgs["ledAmount"] = 1
         if "clockDivider" not in interfaceArgs: interfaceArgs["clockDivider"] = 128
         if "mock" not in interfaceArgs: interfaceArgs["mock"] = False
@@ -104,19 +104,19 @@ class InterfaceService(Service):
 
     def addSoundInterface(self, interfaceArgs):
         self.debug("Setting up Sound Interface.")
-        type = types.SOUND
+        type = InterfaceTypes.SOUND
         soundInterface = SoundInterface()
         soundInterface.initFunc()
         self.interfaces.append(savedInterface(type, soundInterface))
         self.debug("Sound Interface is ready.")
 
     # def addDisplayInterface(self, interfaceArgs):
-    #     type = types.DISPLAY
+    #     type = InterfaceTypes.DISPLAY
     #     displayInterface = DisplayInterface(interfaceArgs)
     #     displayInterface.initFunc()
     #
     # def addGenericInterface(self, interfaceArgs):
-    #     type = types.GENERIC
+    #     type = InterfaceTypes.GENERIC
     #     genericInterface = GenericInterface(interfaceArgs)
     #     genericInterface.initFunc()
 
@@ -168,11 +168,11 @@ class InterfaceService(Service):
                     return [interface for interface in self.interfaces if interface.type not in interfaceFilter]
 
 
-    def getInterfaceByType(self, type):
+    def getInterfaceByType(self, iftype):
         if not self.status == StatusEnum.RUNNING:
             return None
         for item in self.interfaces:
-            if item.type.value == type: return item
+            if item.type.value == iftype: return item
         return None
 
     def getAll(self):
@@ -188,6 +188,18 @@ class InterfaceService(Service):
             list.append(item.to_json())
         return list
 
+    def disableInterface(self, iftype):
+        i = self.getInterfaceByType(iftype)
+        if i is not None:
+            i.interface.deactivate()
+            self.debug("Interface " + iftype + " disabled")
+
+
+    def enableInterface(self, iftype):
+        i = self.getInterfaceByType(iftype)
+        if i is not None:
+            i.interface.activate()
+            self.debug("Interface " + iftype + " enabled")
 
 
 class savedInterface:
@@ -199,7 +211,7 @@ class savedInterface:
         return {"type": self.type.value, "name": self.interface.name, "active": self.interface.active}
 
 
-class types(Enum):
+class InterfaceTypes(Enum):
     LED = "LedInterface"
     SOUND = "SoundInterface"
     DISPLAY = "DisplayInterface"

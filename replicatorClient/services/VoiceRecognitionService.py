@@ -83,8 +83,6 @@ class VoiceRecognitionService(Service):
             t.start()
         else:
             logging.error("Failed to start recorder: Recorder not initialized.")
-
-        print("Not blocked!")
         return True
 
     def start(self, main_loop, *args):
@@ -107,16 +105,28 @@ class VoiceRecognitionService(Service):
 
     def stopService(self):
         self.recorder.stop()
+        return
 
-    def restart(self):
+    def restart(self, main_loop, *args):
+        self.status = StatusEnum.NOTSTARTED
+        try:
+            self.restartService(main_loop, args)
+        except:
+            self.debug("Failed to restart Service: " + self.name)
+            self.status = StatusEnum.FAILED
+        else:
+            self.status = StatusEnum.RUNNING
+
+    def restartService(self, main_loop, *args):
         print("Stopping VoiceRecognitionService....")
         self.stop()
+        self.recorder = None
         self.systemSettings = self.settingsService.getSettings()
-        self.picovoiceConfig = self.settingsService.getPicovoiceConfig()
+        self.picovoiceConfig = self.settingsService.getVoiceConfig()
         print("Restarting VoiceRecognitionService....")
 
         try:
-            self.start()
+            self.start(main_loop, args)
             return self.status
         except Exception as e:
-            logging.error("Failed to restart VoiceRecognitionService: " + e)
+            self.debug("Failed to restart VoiceRecognitionService: " + e)
