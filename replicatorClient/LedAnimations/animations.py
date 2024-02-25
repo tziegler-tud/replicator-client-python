@@ -80,22 +80,25 @@ def _successFunc(ledInterface, ledAnimation):
     ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
     ledInterface.write()
 
-    nextFrame = __fillingCircle(ledInterface, 0, 0.1)
+    __clear(ledInterface, 2000)
+    __delay(f.set_result,2200,True)
 
-    def circleFunc():
-        nonlocal i
-        nonlocal f
-
-        if i < ledInterface.ledAmount:
-            nextFrame()
-            i += 1
-            ledInterface.write()
-            if i == ledInterface.ledAmount:
-                ledInterface.clearInterval()
-                __clear(ledInterface, 2000)
-                f.set_result(True)
-
-    ledInterface.setInterval(circleFunc, 100)
+    # nextFrame = __fillingCircle(ledInterface, 0, 0.1)
+    #
+    # def circleFunc():
+    #     nonlocal i
+    #     nonlocal f
+    #
+    #     if i < ledInterface.ledAmount:
+    #         nextFrame()
+    #         i += 1
+    #         ledInterface.write()
+    #         if i == ledInterface.ledAmount:
+    #             ledInterface.clearInterval()
+    #
+    #             f.set_result(True)
+    #
+    # ledInterface.setInterval(circleFunc, 100)
     return f
 
 success = LedAnimation("success", 1)

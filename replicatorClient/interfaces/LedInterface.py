@@ -89,6 +89,8 @@ class LedInterface(Interface):
     def clearAll(self):
         for led in self.leds:
             led.off()
+            led.setColors(0,0,0)
+            led.setBrightness(0)
 
     def getLeds(self):
         return self.leds

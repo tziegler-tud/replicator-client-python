@@ -133,21 +133,27 @@ class InterfaceService(Service):
 
         interfaces = self.filterInterfaces(interfaceFilter, interfaceFilterType)
 
-        def cb(task):
-            try:
-                result = task.result()
-                print("task finished!")
-            except Exception as e:
-                print("InterfaceService: Handling failed for interface.")
-            finally:
-                tasks.discard(task)
-
         for i in interfaces:
             if i.interface.isActive():
-                t = loop.create_task(i.interface.handleEventInternal(interfaceEvent))
-                tasks.add(t)
-                t.add_done_callback(cb)
-                loop.run_until_complete(t)
+                try:
+                    lock = i.interface.requestLock()
+                except:
+                    self.debug("Failed to handle event: Interface is blocked.")
+                else:
+                    def cb(task):
+                        try:
+                            result = task.result()
+                            print("task finished!")
+                            print("resetting to ready state:")
+                            i.interface.unlock(lock)
+                        except Exception as e:
+                            print("InterfaceService: Handling failed for interface.")
+                        finally:
+                            tasks.discard(task)
+                    t = loop.create_task(i.interface.handleEventInternal(interfaceEvent))
+                    tasks.add(t)
+                    t.add_done_callback(cb)
+                    loop.run_until_complete(t)
         return True
 
     def filterInterfaces(self, interfaceFilter = [], interfaceFilterType = "include"):

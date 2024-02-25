@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from enum import Enum
 
 
@@ -7,6 +8,8 @@ class Interface:
         self.active = False
         self.interval = None
         self.name = "Interface"
+        self.locked = False
+        self.lock = None
     def initFunc(self):
         return True
 
@@ -44,6 +47,26 @@ class Interface:
                 self.warn("Unhandled event type.")
                 return False
 
+    def requestLock(self):
+        if self.locked:
+            raise Exception("Interface is already locked.")
+        else:
+            lock = Lock()
+            self.lock = lock
+            self.locked = True
+            return lock
+
+    def unlock(self, lock):
+        if self.lock is not None:
+            if self.lock.id == lock.id:
+                self.lock = None
+                self.locked = False
+                return True
+            else:
+                return False
+        else:
+            return False
+
     def isActive(self):
         return self.active
 
@@ -55,6 +78,13 @@ class Interface:
         if self.interval is not None:
             self.interval = None
 
+class Lock:
+    def __init__(self):
+        self.id = datetime.datetime.now()
+        self.active = True
+    def destroy(self):
+        self.id = 0
+        self.active = False
 class InterfaceEvents(Enum):
     SETUPCOMPLETE = "setupComplete"
     READY = "ready"
