@@ -135,19 +135,13 @@ class InterfaceService(Service):
 
         for i in interfaces:
             if i.interface.isActive():
-                try:
-                    lock = i.interface.requestLock()
-                except:
-                    self.debug("Failed to handle event: Interface is blocked.")
-                else:
                     def cb(task):
                         try:
                             result = task.result()
                             print("task finished!")
                             print("resetting to ready state:")
-                            i.interface.unlock(lock)
                         except Exception as e:
-                            print("InterfaceService: Handling failed for interface.")
+                            print("InterfaceService: Handling failed for interface: " + i.interface.name)
                         finally:
                             tasks.discard(task)
                     t = loop.create_task(i.interface.handleEventInternal(interfaceEvent))
