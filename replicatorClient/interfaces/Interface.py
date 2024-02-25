@@ -79,8 +79,10 @@ class Interface:
             self.interval = None
 
 class Lock:
+    counter = 0
     def __init__(self):
-        self.id = datetime.datetime.now()
+        Lock.counter = Lock.counter + 1
+        self.id = Lock.counter
         self.active = True
     def destroy(self):
         self.id = 0
