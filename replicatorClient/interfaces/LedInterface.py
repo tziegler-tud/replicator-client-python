@@ -86,7 +86,7 @@ class LedInterface(Interface):
 
         for led in self.leds:
             led.setColors(r,g,b)
-            if kwargs.get("brightness") is not None: led.setBrightness(kwargs.get("brightness"))
+            led.setBrightness(kwargs.get("brightness",0))
 
     def clearAll(self):
         for led in self.leds:

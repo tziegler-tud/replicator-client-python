@@ -77,7 +77,7 @@ def _successFunc(ledInterface, ledAnimation):
     f = asyncio.Future()
     leds = ledInterface.getLeds()
     i = 0
-    ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0)
+    ledInterface.setAll(color_r=0, color_g=255, color_b=0, brightness=0.1)
     ledInterface.write()
 
     __clear(ledInterface, 2000)
