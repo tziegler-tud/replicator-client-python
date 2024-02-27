@@ -93,11 +93,12 @@ class InterfaceService(Service):
         if "ledAmount" not in interfaceArgs: interfaceArgs["ledAmount"] = 1
         if "clockDivider" not in interfaceArgs: interfaceArgs["clockDivider"] = 128
         if "mock" not in interfaceArgs: interfaceArgs["mock"] = False
+        if "debug" not in interfaceArgs: interfaceArgs["debug"] = False
 
         if interfaceArgs["mock"]:
-            ledInterface = MockLedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
+            ledInterface = MockLedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"], enableDebug=interfaceArgs["debug"])
         else:
-            ledInterface = LedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"])
+            ledInterface = LedInterface(ledAmount=interfaceArgs["ledAmount"], clockDivider=interfaceArgs["clockDivider"], enableDebug=interfaceArgs["debug"])
         ledInterface.initFunc()
         self.interfaces.append(savedInterface(type, ledInterface))
         self.debug("LED Interface is ready.")

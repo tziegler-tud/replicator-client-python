@@ -10,11 +10,12 @@ from .Led import Led
 
 
 class MockLedInterface(Interface):
-    def __init__(self, ledAmount=1, clockDivider=128):
+    def __init__(self, ledAmount=1, clockDivider=128, enableDebug=False):
         super().__init__()
         self.ledAmount = ledAmount
         self.clockDivider = clockDivider
         self.leds = []
+        self.enableDebug = enableDebug
 
         self.LED_START = 0b11100000
 
@@ -59,7 +60,7 @@ class MockLedInterface(Interface):
 
     def write(self):
         writeBuffer = self.generateWriteBuffer()
-        self.debug("Transfering buffer to spi. Content: " + str(writeBuffer))
+        if self.enableDebug: self.debug("Transfering buffer to spi. Content: " + str(writeBuffer))
         # self.spi.xfer(writeBuffer)
 
     def generateLedBuffer(self):
@@ -93,6 +94,8 @@ class MockLedInterface(Interface):
     def clearAll(self):
         for led in self.leds:
             led.off()
+            led.setColors(0, 0, 0)
+            led.setBrightness(0)
 
     def getLeds(self):
         return self.leds

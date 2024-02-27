@@ -15,11 +15,12 @@ from .Led import Led
 
 
 class LedInterface(Interface):
-    def __init__(self, ledAmount=1, clockDivider=128):
+    def __init__(self, ledAmount=1, clockDivider=128, enableDebug=False):
         super().__init__()
         self.ledAmount = ledAmount
         self.clockDivider = clockDivider
         self.leds = []
+        self.enableDebug = enableDebug
 
         self.LED_START = 0b11100000
 
@@ -56,6 +57,7 @@ class LedInterface(Interface):
 
     def write(self):
         writeBuffer = self.generateWriteBuffer()
+        if self.enableDebug: self.debug("Transfering buffer to spi. Content: " + str(writeBuffer))
         self.spi.xfer3(writeBuffer)
 
     def generateLedBuffer(self):
